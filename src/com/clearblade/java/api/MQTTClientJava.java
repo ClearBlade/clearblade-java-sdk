@@ -36,7 +36,7 @@ public class MQTTClientJava {
 				ex.getMessage();
 			}
 			
-			message.disconnectMQTTService();
+			message.disconnect();
 			
 			logoutUser();
 		}

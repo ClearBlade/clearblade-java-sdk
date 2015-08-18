@@ -92,7 +92,7 @@ public class Message implements MqttCallback {
 		
 	}
 	
-	public boolean disconnectMQTTService() {
+	public boolean disconnect() {
 		
 		if (!isStarted)
 			return true;
