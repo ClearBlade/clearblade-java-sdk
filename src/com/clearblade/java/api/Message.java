@@ -21,6 +21,7 @@ public class Message implements MqttCallback {
 	
 	private static MemoryPersistence memoryPersistance; 		
 	private static MqttConnectOptions opts;			
+
 	private static MqttClient mqttClient;
 	
 	private MessageCallback messageReceivedCallback;
