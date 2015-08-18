@@ -1,118 +1,219 @@
 package com.clearblade.java.api;
 
+import java.util.HashSet;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 
-public class Message {
-//	MessageReceiver messageReceiver;
-//	Context context;
-//	HashSet<String> subscribed;
-//	int qualityOfService;
-//
-//	public Message(Context ctx){
-//		context = ctx;
-//		//Start our own service
-//	    Intent intent = new Intent(context, MessageService.class);
-//	    intent.setAction(MessageService.MESSAGE_ACTION_START);
-//	    //intent.putExtra("topic", topic);
-//	    context.startService(intent);
-//	    subscribed = new HashSet<String>();
-//	    qualityOfService = 0;
-//	    
-//	}
-//	
-//	//constructor to set custom QoS level
-//	public Message(Context ctx, int qos){
-//		context = ctx;
-//		//check qos is valid, if not return error
-//		if(qos > 2 || qos < 0){
-//			throw new IllegalArgumentException("qualityOfService must be 0, 1, or 2");
-//		}
-//		//set to passed qos value
-//		qualityOfService = qos;
-//		//Start our own service
-//		Intent intent = new Intent(context, MessageService.class);
-//		intent.setAction(MessageService.MESSAGE_ACTION_START);
-//		context.startService(intent);
-//		subscribed = new HashSet<String>();
-//	}
-//	
-//	//MessageCallback callback;
-//	
-//	public void subscribe(String topic, MessageCallback back){
-//		if (subscribed.contains(topic)){
-//			return;
-//		} else {
-//			subscribed.add(topic);
-//		}
-//
-//	    //send the subscribe message
-//		//serviceReceiver = new ServiceReceiver();
-//	    Intent intent = new Intent();
-//		intent.setAction(MessageService.MESSAGE_ACTION_SUBSCRIBE);
-//		intent.putExtra("topic", topic);
-//		intent.putExtra("qos", qualityOfService);
-//		context.sendBroadcast(intent);	
-//		
-//		//Set the callback events for publish events
-//	    messageReceiver = new MessageReceiver();
-//	    IntentFilter intentFilter = new IntentFilter();
-//	    intentFilter.addAction(MessageService.MESSAGE_ACTION_MESSAGE_RECEIVED);
-//	    context.registerReceiver(messageReceiver, intentFilter);
-//	    messageReceiver.addMessageReceivedCallback(back);
-//	}
-//	
-//	public void publish(String topic, String message) {
-//		Intent intent = new Intent();
-//		intent.setAction(MessageService.MESSAGE_ACTION_PUBLISH);
-//		intent.putExtra("topic", topic);
-//		intent.putExtra("message", message);
-//		intent.putExtra("qos", qualityOfService);
-//		context.sendBroadcast(intent);
-//	}
-//	
-//	public void unsubscribe(String topic){
-//		subscribed.remove(topic);
-//		Intent intent = new Intent();
-//		intent.setAction(MessageService.MESSAGE_ACTION_SUBSCRIBE);
-//		intent.putExtra("topic", topic);
-//		context.sendBroadcast(intent);	
-//	}
-//	
-//	public void destroy(){
-//		context.unregisterReceiver(messageReceiver);
-//	}
-//	
-//	public void getHistory(String topic, int count, String lastTime, final MessageCallback callback){
-//		RequestEngine request = new RequestEngine();
-//		
-//		String t = topic;
-//		try {
-//			t = URLEncoder.encode(topic, "UTF-8");
-//		} catch (UnsupportedEncodingException e) {
-//			e.printStackTrace();
-//		}
-//		String endpoint = "api/v/1/message/"+Util.getSystemKey()+"?topic="+t+"&count="+count+"&last="+lastTime;
-//		RequestProperties headers = new RequestProperties.Builder().method("GET").endPoint(endpoint).build();
-//		request.setHeaders(headers);
-//		final History history = new History();
-//		
-//		UserTask asyncFetch = new UserTask(new PlatformCallback(history, callback){
-//			@Override
-//			public void done(String response){
-//				try {
-//					history.loadHistoryJSON(response);
-//				} catch (ClearBladeException e) {
-//					e.printStackTrace();
-//				}
-//				callback.done(history);
-//			}
-//			@Override
-//			public void error(ClearBladeException exception){
-//				ClearBlade.setInitError(true);
-//				callback.error(exception);
-//			}
-//		});
-//		
-//		asyncFetch.execute(request);
-//	}
+public class Message implements MqttCallback {
+	
+	public String url = ClearBlade.getMessageUrl();
+	private static boolean isStarted = false; 
+	HashSet<String> subscribed;
+	int qualityOfService;
+	String clientIdentifier;
+	
+	private static MemoryPersistence memoryPersistance; 		
+	private static MqttConnectOptions opts;			
+	private static MqttClient mqttClient;
+	
+	private MessageCallback messageReceivedCallback;
+	
+	
+	public Message(String clientID) {
+		
+		clientIdentifier = clientID;
+		qualityOfService = 0;
+		connectToMQTTService();
+		subscribed = new HashSet<String>();
+	}
+	
+	
+	public Message(String clientID, int qos) {
+		
+		clientIdentifier = clientID;
+		qualityOfService = qos;
+		connectToMQTTService();
+		subscribed = new HashSet<String>();
+	}
+	
+	
+	/* First this method should be called in order to connect to the MQTT service. This method checks for the auth token and if its null,
+	 * it terminates the connection attempt. If an auth token is available, it attempts to connect.
+	 */
+	public void connectToMQTTService() {
+		
+		if (isStarted)
+			return;
+		
+		opts = new MqttConnectOptions();
+		opts.setCleanSession(true);
+		User curUser = ClearBlade.getCurrentUser(); 
+		
+		if (curUser.getAuthToken() == null) {
+			
+			System.out.println("Auth token is null");
+			return;
+		}
+		
+		else {
+			
+			opts.setUserName(curUser.getAuthToken());
+			opts.setPassword(Util.getSystemKey().toCharArray());
+		}
+		
+		connect();
+		
+	}
+	
+	public void connect() {
+		
+		try {
+			
+			mqttClient = new MqttClient(url, clientIdentifier, memoryPersistance);
+			mqttClient.connect(opts);
+			mqttClient.setCallback(this);
+			isStarted = true;
+			System.out.println("Connected to the MQTT Service");
+		}
+		
+		catch(MqttException e) {
+			
+			System.out.println("Catching exception for MQTT connect");
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public boolean disconnectMQTTService() {
+		
+		if (!isStarted)
+			return true;
+		
+		if (mqttClient != null) {
+			
+			try {
+				
+				mqttClient.disconnect();
+			}
+			
+			catch(MqttException e) {
+				
+				e.printStackTrace();
+			}
+			
+			mqttClient = null;
+			isStarted = false;
+			System.out.println("Disconnected from the MQTT Service");
+			return true;
+		}
+		
+		else {
+			
+			System.out.println("Unable to Disconnect");
+			return false;
+		}
+	}
+	
+	
+	public void publish (String topic, String message) {
+		
+		publish(topic, message.getBytes(), qualityOfService);
+	}
+	
+	
+	public void publish(String topic, byte[] payload, int qos) {
+		
+		try {
+			
+			mqttClient.publish(topic, payload, qos, false);
+			System.out.println("Message published");
+		} 
+		
+		catch (MqttPersistenceException e) {
+			
+			e.printStackTrace();
+		} 
+		
+		catch (MqttException e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void subscribe(String topic, MessageCallback callback) {
+		
+		if (subscribed.contains(topic))
+			return;
+
+		else {
+			
+			subscribed.add(topic);
+		}
+		
+		subscribe(topic, qualityOfService, callback);
+	}
+	
+	
+	public void subscribe(String topic, int qos, MessageCallback callback) {
+		
+		try {
+			
+			mqttClient.subscribe(topic, qos);
+			System.out.println("Subscribed");
+			messageReceivedCallback = callback;
+		} 
+		
+		catch (MqttException e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void unsubscribe(String topic) {
+		
+		subscribed.remove(topic);
+		
+		try {
+			
+			mqttClient.unsubscribe(topic);
+			System.out.println("Unsubscribed");
+		}
+		
+		catch (MqttException e) {
+			
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@Override
+	public void messageArrived(String topic, MqttMessage message) throws Exception {
+		
+		messageReceivedCallback.done(topic, new String(message.getPayload()));
+	}
+	
+	
+	@Override
+	public void deliveryComplete(IMqttDeliveryToken arg0) {
+		
+	}
+	
+	
+	@Override
+	public void connectionLost(Throwable arg0) {
+		
+		System.out.println(arg0.getMessage() + ". Reconnecting");
+		mqttClient = null;
+		connect();
+	}
+
 }
