@@ -64,12 +64,12 @@ public class User {
 		if(result.getError()){
 			Util.logger("CBUserTask", "User call failed: " + result.getData(), true);
 			ClearBlade.setInitError(true);
-			new ClearBladeException("Call to user failed: " + result.getData());
+			callback.error(new ClearBladeException("Call to user failed: " + result.getData()));
 		}else{
 			authToken = getPropertyValueFromJSONString("user_token", (String)result.getData());
+			callback.done(true);
 		}
 		
-		callback.done(true);
 
 	}
 

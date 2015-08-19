@@ -6,6 +6,7 @@ public class MQTTClientJava {
 
 	private static Message message;
 	private static boolean isInit = false;
+	private static User user;
 	
 	public static void main(String[] args) {
 		
@@ -48,7 +49,7 @@ public class MQTTClientJava {
 			
 			@Override
 			public void done(boolean results) {
-					
+				
 				System.out.println("ClearBlade platform initialized");
 				isInit = true;
 			}
@@ -64,14 +65,14 @@ public class MQTTClientJava {
 		
 		String systemKey = "d2f7d2dc0ab8cfbfa49cf0feb50b";
 		String systemSecret = "D2F7D2DC0AD0E6AEB89AB0E6FAB501";
-		String userEmail = "test@clearblade.com";
+		String userEmail = "test114@clearblade.com";
 		String userPassword = "clearblade";
 		String platformURL = "https://rtp.clearblade.com";
 		String messagingURL = "tcp://rtp.clearblade.com:1883";
-		
+		//user = new User(userEmail);
 		HashMap<String, Object> options = new HashMap<String, Object>();
-		options.put("email", userEmail);
-		options.put("password", userPassword);
+		//options.put("email", userEmail);
+		//options.put("password", userPassword);
 		options.put("platformURL", platformURL);
 		options.put("messagingURL", messagingURL);
 		
