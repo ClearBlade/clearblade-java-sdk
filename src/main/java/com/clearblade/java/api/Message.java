@@ -194,27 +194,19 @@ public class Message implements MqttCallback {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	@Override
+
+	public void connectionLost(Throwable arg0) {
+		String msg = String.format("%s. Reconnecting...", arg0.getMessage());
+		System.out.println(msg);
+		mqttClient = null;
+		connect();
+	}
+
 	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		
 		messageReceivedCallback.done(topic, new String(message.getPayload()));
 	}
 	
-	
-	@Override
 	public void deliveryComplete(IMqttDeliveryToken arg0) {
-		
-	}
-	
-	
-	@Override
-	public void connectionLost(Throwable arg0) {
-		
-		System.out.println(arg0.getMessage() + ". Reconnecting");
-		mqttClient = null;
-		connect();
 	}
 
 }
