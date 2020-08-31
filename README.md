@@ -432,7 +432,7 @@ public class MQTTClientJava {
 	private static Message message;
 	private static boolean isInit = false;
 	
-	public static void main(String[] args) {
+	public static void Main(String[] args) {
 		
 		initClearBlade();
 		if (isInit) {
