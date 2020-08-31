@@ -8,5 +8,26 @@
     <artifactId>clearblade-java-sdk</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    
+    <repositories>
+        <repository>
+            <id>Eclipse Paho Repo</id>
+            <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.6</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/gson-2.3.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+    </dependencies>
 </project>
