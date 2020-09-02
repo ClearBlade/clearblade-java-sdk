@@ -42,6 +42,19 @@ public class InitOptions {
         this._allowUntrusted = false;
     }
 
+    public InitOptions(InitOptions other) {
+        this._platformUrl = other._platformUrl;
+        this._messagingUrl = other._messagingUrl;
+
+        this._email = other._email;
+        this._password = other._password;
+        this._auth = other._auth; // TODO: Copy auth instead of just getting same reference?
+
+        this._enableLogging = other._enableLogging;
+        this._callTimeout = other._callTimeout;
+        this._allowUntrusted = other._allowUntrusted;
+    }
+
     // Getters
 
     public String platformUrl() {
