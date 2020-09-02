@@ -57,27 +57,27 @@ public class InitOptions {
 
     // Getters
 
-    public String platformUrl() {
+    public String getPlatformUrl() {
         return this._platformUrl;
     }
 
-    public String messagingUrl() {
+    public String getMessagingUrl() {
         return this._messagingUrl;
     }
 
-    public Auth auth() {
+    public Auth getAuth() {
         return this._auth;
     }
 
-    public boolean enableLogging() {
+    public boolean isEnableLogging() {
         return this._enableLogging;
     }
 
-    public int callTimeout() {
+    public int getCallTimeout() {
         return this._callTimeout;
     }
 
-    public boolean allowUntrusted() {
+    public boolean isAllowUntrusted() {
         return this._allowUntrusted;
     }
 
