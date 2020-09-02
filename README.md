@@ -357,30 +357,30 @@ The Messaging API is used initialize, connect and communicate with the ClearBlad
 **Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Messaging API. This is important because the ClearBlade MQTT Broker requires the authentication token to establish a successful connection. This authentication token can only be obtained by initializing and authenticaing with the ClearBlade platform**
 
 You will need to import the following packages for using the Messaging API:  
-```import com.clearblade.java.api.Message;```  
+```import com.clearblade.java.api.MQTTClient;```  
 ```import com.clearblade.java.api.MessageCallback;```
 
 ### Initialize and Connect  
 The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT Broker.
 ```java
 String clientID = “ClearBladeJavaTest”; 
-Message message = new Message(clientID); // QoS = 0 Default
+Message mqttClient = new Message(clientID); // QoS = 0 Default
 ```
 OR
 ```java
 int qos = 1; // QoS can be 0,1 or 2
 String clientID = “ClearBladeJavaTest”;  
-Message message = new Message(clientID, qos);
+Message mqttClient = new Message(clientID, qos);
 ```
 
 After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the ```Message``` object. 
 
 ### Publish
-The publish function takes a topic and message of type ```String``` and publishes to the MQTT Broker.
+The publish function takes a topic and mqttClient of type ```String``` and publishes to the MQTT Broker.
 ```java
 String topic = "yourTopic";
-String message = "yourMessage";
-message.publish(topic, message);
+String mqttClient = "yourMessage";
+mqttClient.publish(topic, mqttClient);
 ```
 
 ### Subscribe
@@ -393,20 +393,20 @@ MessageCallback messageCallback = new MessageCallback() {
 		//Message arrived on subscribed topic
 	}
 };
-message.subscribe(topic, messageCallback);
+mqttClient.subscribe(topic, messageCallback);
 ```
 
 ### Unsubscribe
 The unsubscribe function takes a topic of type ```String``.
 ```java
 String topic = "topicToUnsubscribe";
-message.unsubscribe(topic);
+mqttClient.unsubscribe(topic);
 ```
 
 ### Disconnect
 The disconnect function is used to disconnect from the MQTT Broker. **Note that this does not disconnect the user from the ClearBlade platform. User logout needs to be called separately.**
 ```java
-message.disconnect();
+mqttClient.disconnect();
 ```
 # Setup
 
@@ -425,11 +425,10 @@ package com.example.client;
 import java.util.HashMap;
 
 import com.clearblade.java.api.*;
-import com.clearblade.java.api.internal.*;
 
 public class MQTTClientJava {
 
-	private static Message message;
+	private static MQTTClient mqttClient;
 	private static boolean isInit = false;
 	
 	public static void Main(String[] args) {
@@ -461,7 +460,7 @@ public class MQTTClientJava {
 				ex.getMessage();
 			}
 			
-			message.disconnect();
+			mqttClient.disconnect();
 			
 			logoutUser();
 		}
@@ -482,8 +481,8 @@ public class MQTTClientJava {
 			public void error(ClearBladeException error) {
 				
 				isInit = false;
-				String message = error.getMessage();
-				System.out.println(message);
+				String mqttClient = error.getMessage();
+				System.out.println(mqttClient);
 			}
 		};
 		
@@ -505,7 +504,7 @@ public class MQTTClientJava {
 	
 	private static void connectToMQTT() {
 		
-		message = new Message("clientID-test", 1);
+		mqttClient = new MQTTClient("clientID-test", 1);
 	}
 	
 	private static void subscribe(String topic) {
@@ -513,25 +512,25 @@ public class MQTTClientJava {
 		MessageCallback messageCallback = new MessageCallback() {
 			
 			@Override
-			public void done(String topic, String message){
+			public void done(String topic, String mqttClient){
 				
-				System.out.println("Topic: " + topic +" Message received: " + message);
+				System.out.println("Topic: " + topic +" Message received: " + mqttClient);
 			}
 			
 			@Override
 			public void error(ClearBladeException exception) {
 				
-				String message = exception.getLocalizedMessage();
-				System.out.println("CB Subscribe Exception: " + message);
+				String mqttClient = exception.getLocalizedMessage();
+				System.out.println("CB Subscribe Exception: " + mqttClient);
 			}
 		};
 		
-		message.subscribe(topic, messageCallback);
+		mqttClient.subscribe(topic, messageCallback);
 	}
 	
 	private static void publish(String topic, String payload) {
 		
-		message.publish(topic, payload);
+		mqttClient.publish(topic, payload);
 	}
 	
 	private static void logoutUser() {

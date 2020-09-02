@@ -1,13 +1,15 @@
-package com.clearblade.java.api;
+package com.clearblade.examples;
+
+import com.clearblade.java.api.*;
 
 import java.util.HashMap;
 
 public class MQTTClientJava {
 
-	private static Message message;
+	private static MQTTClient mqttClient;
 	private static boolean isInit = false;
 	private static User user;
-	
+
 	public static void main(String[] args) {
 		
 		initClearBlade();
@@ -37,7 +39,7 @@ public class MQTTClientJava {
 				ex.getMessage();
 			}
 			
-			message.disconnect();
+			mqttClient.disconnect();
 			
 			logoutUser();
 		}
@@ -81,7 +83,7 @@ public class MQTTClientJava {
 	
 	private static void connectToMQTT() {
 		
-		message = new Message("clientID-test", 1);
+		mqttClient = new MQTTClient("clientID-test", 1);
 	}
 	
 	private static void subscribe(String topic) {
@@ -102,12 +104,12 @@ public class MQTTClientJava {
 			}
 		};
 		
-		message.subscribe(topic, messageCallback);
+		mqttClient.subscribe(topic, messageCallback);
 	}
 	
 	private static void publish(String topic, String payload) {
 		
-		message.publish(topic, payload);
+		mqttClient.publish(topic, payload);
 	}
 	
 	private static void logoutUser() {
