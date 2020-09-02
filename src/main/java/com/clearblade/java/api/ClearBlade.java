@@ -205,7 +205,7 @@ public class ClearBlade {
 	 */
     public static void initialize(String systemKey, String systemSecret, InitOptions options, InitCallback callback) {
 
-    	// copy passed InitOptions
+    	// uses copy constructor on given options
 
     	_initOptions = new InitOptions(options);
 

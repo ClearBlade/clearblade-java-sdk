@@ -14,7 +14,7 @@ public class UserAuth implements Auth {
     private final String _email;
     private final String _password;
     private final boolean _tryRegister;
-    private String _token;
+    protected String _token;
 
     public UserAuth(String email, String password) {
         this._email = email;
@@ -32,8 +32,8 @@ public class UserAuth implements Auth {
 
     synchronized public void doAuth() throws AuthException {
 
-        Boolean emailMissing = this._email == null || this._email.length() <= 0;
-        Boolean passwordMissing = this._password == null || this._password.length() <= 0;
+        boolean emailMissing = this._email == null || this._email.length() <= 0;
+        boolean passwordMissing = this._password == null || this._password.length() <= 0;
 
         if (emailMissing || passwordMissing) {
             throw new AuthException("UserAuth needs both email and password");
