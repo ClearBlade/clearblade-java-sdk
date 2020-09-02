@@ -29,9 +29,7 @@ public class ClearBlade {
 	private static User user;								// Current User of the application. Not implemented Yet
 	private static boolean initError = false;
 	private static boolean allowUntrusted=false;			// if the platform has https enabled but no publically signed certificate
-	
-	
-	
+
 	/**
 	 * Returns the version of the API that is currently in use.
 	 * 
@@ -41,9 +39,7 @@ public class ClearBlade {
 		return apiVersion;
 	}
 
-
-	
-	/** 
+	/**
 	 * Returns the milliseconds that the API will wait for a connection to the backend
 	 * until API requests are aborted.
 	 * @return milliseconds 
@@ -116,7 +112,7 @@ public class ClearBlade {
 	public static boolean getAllowUntrusted(){
 		return allowUntrusted;
 	}
-	
+
 	/**
 	 * Initializes the API for the given system as an anonymous user. (If the system
 	 * has user authentication required set to true, this will fail - See the initialize
