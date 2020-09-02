@@ -8,8 +8,6 @@ public class MQTTClientJava {
 
 	private static MQTTClient mqttClient;
 	private static boolean isInit = false;
-	private static User user;
-
 	public static void main(String[] args) {
 		
 		initClearBlade();
@@ -41,7 +39,7 @@ public class MQTTClientJava {
 			
 			mqttClient.disconnect();
 			
-			logoutUser();
+			logout();
 		}
 	}
 	
@@ -65,18 +63,19 @@ public class MQTTClientJava {
 			}
 		};
 		
-		String systemKey = "d2f7d2dc0ab8cfbfa49cf0feb50b";
-		String systemSecret = "D2F7D2DC0AD0E6AEB89AB0E6FAB501";
-		String userEmail = "test114@clearblade.com";
-		String userPassword = "clearblade";
-		String platformURL = "https://rtp.clearblade.com";
-		String messagingURL = "tcp://rtp.clearblade.com:1883";
-		//user = new User(userEmail);
+		String systemKey = "[SYSTEM KEY GOES HERE]";
+		String systemSecret = "[SYSTEM SECRET GOES HERE]";
+		String userEmail = "[USER EMAIL GOES HERE]";
+		String userPassword = "[USER PASSWORD GOES HERE]";
+		String platformUrl = "[PLATFORM URL GOES HERE]";
+		String messagingUrl = "[MESSAGING URL GOES HERE]";
+
 		HashMap<String, Object> options = new HashMap<String, Object>();
-		//options.put("email", userEmail);
-		//options.put("password", userPassword);
-		options.put("platformURL", platformURL);
-		options.put("messagingURL", messagingURL);
+
+		options.put("email", userEmail);
+		options.put("password", userPassword);
+		options.put("platformURL", platformUrl);
+		options.put("messagingURL", messagingUrl);
 		
 		ClearBlade.initialize(systemKey, systemSecret, options, initCallback);
 	}
@@ -108,26 +107,16 @@ public class MQTTClientJava {
 	}
 	
 	private static void publish(String topic, String payload) {
-		
 		mqttClient.publish(topic, payload);
 	}
 	
-	private static void logoutUser() {
-//
-//		User currentUser = ClearBlade.getCurrentUser();
-//		currentUser.logout(new InitCallback() {
-//
-//			@Override
-//			public void done(boolean results) {
-//
-//				System.out.println("User logged out");
-//			}
-//			@Override
-//			public void error(ClearBladeException exception) {
-//				System.out.println("Logout failed " + exception.getMessage());
-//			}
-//
-//		});
+	private static void logout() {
+		try {
+			ClearBlade.getAuth().doLogout();
+			System.out.println("logged out");
+		} catch (Exception e) {
+			System.out.println("logout failed: " + e.getMessage());
+		}
 	}
 
 }
