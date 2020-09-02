@@ -61,7 +61,7 @@ public class User {
 		//asyncFetch.execute(request);
 		
 		PlatformResponse result = request.execute();
-		if(result.getError()){
+		if(result.isError()){
 			Util.logger("CBUserTask", "User call failed: " + result.getData(), true);
 			ClearBlade.setInitError(true);
 			callback.error(new ClearBladeException("Call to user failed: " + result.getData()));
@@ -103,7 +103,7 @@ public class User {
 //		asyncFetch.execute(request);
 		
 		PlatformResponse result = request.execute();
-		if(result.getError()){
+		if(result.isError()){
 			Util.logger("CBUserTask", "User call failed: " + result.getData(), true);
 			callback.error( new ClearBladeException("Unable to register user, email taken") );
 			
@@ -134,7 +134,7 @@ public class User {
 //		
 //		asyncFetch.execute(request);
 		PlatformResponse result = request.execute();
-		if(result.getError()){
+		if(result.isError()){
 			Util.logger("CBUserTask", "User call failed: " + result.getData(), true);
 			ClearBlade.setInitError(true);
 			callback.error( new ClearBladeException("Unable to authWithAnonUser") );
@@ -171,7 +171,7 @@ public class User {
 //
 //		asyncFetch.execute(request);
 		PlatformResponse result = request.execute();
-		if(result.getError()){
+		if(result.isError()){
 			Util.logger("CBUserTask", "User call failed: " + result.getData(), true);
 			ClearBlade.setInitError(true);
 			callback.error( new ClearBladeException("checkUserAuth") );
@@ -208,7 +208,7 @@ public class User {
 //		
 //		asyncFetch.execute(request);
 		PlatformResponse result = request.execute();
-		if(result.getError()){
+		if(result.isError()){
 			Util.logger("CBUserTask", "User call failed: " + result.getData(), true);
 			ClearBlade.setInitError(true);
 			callback.error( new ClearBladeException("logout") );

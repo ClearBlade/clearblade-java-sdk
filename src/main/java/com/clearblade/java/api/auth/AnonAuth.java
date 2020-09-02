@@ -4,19 +4,21 @@ import java.util.Map;
 
 public class AnonAuth implements Auth {
 
-    public void auth() throws AuthException {}
+    public void doAuth() throws AuthException {}
 
-    public void check() throws AuthException {}
+    public void doCheck() throws AuthException {}
+
+    public void doLogout() throws AuthException {}
 
     public boolean isAuthed() {
         return false;
     }
 
-    public String token() {
+    public String getToken() {
         return "";
     }
 
-    public Map<String, String> requestHeaders() {
+    public Map<String, String> getRequestHeaders() {
         return null;
     }
 }

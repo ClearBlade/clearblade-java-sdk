@@ -11,17 +11,26 @@ import java.util.Map;
 
 public class UserAuth implements Auth {
 
-    private String _email;
-    private String _password;
+    private final String _email;
+    private final String _password;
+    private final boolean _tryRegister;
     private String _token;
 
     public UserAuth(String email, String password) {
         this._email = email;
         this._password = password;
+        this._tryRegister = false;
         this._token = null;
     }
 
-    synchronized public void auth() throws AuthException {
+    public UserAuth(String email, String password, boolean tryRegister) {
+        this._email = email;
+        this._password = password;
+        this._tryRegister = tryRegister;
+        this._token = null;
+    }
+
+    synchronized public void doAuth() throws AuthException {
 
         JsonObject payload = new JsonObject();
         payload.addProperty("email", this._email);
@@ -30,58 +39,75 @@ public class UserAuth implements Auth {
         RequestProperties headers = new RequestProperties
                 .Builder()
                 .method("POST")
-                .endPoint("api/v1/user/auth")
+                .endPoint("api/v/1/user/auth")
                 .body(payload)
                 .build();
 
         RequestEngine request = new RequestEngine();
         request.setHeaders(headers);
 
-        PlatformResponse result = request.execute();
-        if (result.getError()) {
-            throw new AuthException("unable to authenticate using user");
+        PlatformResponse<String> result = request.execute();
+        if (result.isError()) {
+            throw new AuthException(String.format("unable to authenticate user: %s", result.getData()));
         }
 
-        JsonObject obj = (JsonObject) JsonParser.parseString((String) result.getData());
-        String authToken = obj.get("user_token").getAsString();
-
-        this._token = authToken;
+        JsonObject obj = (JsonObject) JsonParser.parseString(result.getData());
+        this._token = obj.get("user_token").getAsString();
     }
 
-    public void check() throws AuthException {
+    synchronized public void doCheck() throws AuthException {
 
         RequestProperties headers = new RequestProperties
                 .Builder()
                 .method("POST")
-                .endPoint("api/v1/user/checkauth")
+                .endPoint("api/v/1/user/checkauth")
                 .build();
 
         RequestEngine request = new RequestEngine();
         request.setHeaders(headers);
 
-        PlatformResponse result = request.execute();
-        if (result.getError()) {
-            throw new AuthException("unable to check user authentication");
+        PlatformResponse<String> result = request.execute();
+        if (result.isError()) {
+            throw new AuthException(String.format("unable check user authentication: %s", result.getData()));
         }
 
-        JsonObject obj = (JsonObject) JsonParser.parseString((String) result.getData());
+        JsonObject obj = (JsonObject) JsonParser.parseString(result.getData());
         boolean isAuthenticated = obj.get("is_authenticated").getAsString().equalsIgnoreCase("true");
         if (!isAuthenticated) {
             throw new AuthException("user is not authenticated");
         }
     }
 
+    synchronized public void doLogout() throws AuthException {
+
+        RequestProperties headers = new RequestProperties
+                .Builder()
+                .method("POST")
+                .endPoint("api/v/1/user/logout")
+                .build();
+
+        RequestEngine request = new RequestEngine();
+        request.setHeaders(headers);
+
+        PlatformResponse<String> result = request.execute();
+        if (result.isError()) {
+            throw new AuthException(String.format("unable to logout user: %s", result.getData()));
+        }
+
+        this._token = null;
+    }
+
     public boolean isAuthed() {
         return this._token != null && this._token.length() > 0;
     }
 
-    public String token() {
+    public String getToken() {
         return this._token == null ? "" : this._token;
     }
 
-    public Map<String, String> requestHeaders() {
+    public Map<String, String> getRequestHeaders() {
         HashMap<String, String> m = new HashMap<String, String>();
-        m.put("ClearBlade-UserToken", this.token());
+        m.put("ClearBlade-UserToken", this.getToken());
         return m;
     }
 }

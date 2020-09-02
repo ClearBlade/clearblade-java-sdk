@@ -23,9 +23,18 @@ public class PlatformResponse<T> {
 	 * occurred during the API call
 	 * @return error is True is an error occurred during the API call, false otherwise
 	 */
-	public boolean getError() {
+	public boolean isError() {
 		return this.error;
 	}
+
+	/**
+	 * @deprecated use {@link #isError()} instead
+	 */
+	@Deprecated
+	public boolean getError() {
+		return this.isError();
+	}
+
 	/**
 	 * Constructs new ApiResponse of Type T
 	 * @param error stored the condition of the API Call

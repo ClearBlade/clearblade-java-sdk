@@ -359,7 +359,7 @@ public class Item {
 //		asyncFetch.execute(request);
 		
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to Save failed:"+result.getData()));
 		} else {
@@ -372,7 +372,7 @@ public class Item {
 	public void loadSync(String itemId) throws ClearBladeException{
 		loadSetup(itemId);
 		PlatformResponse<String> result = request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			throw new ClearBladeException("Call to Load failed:"+result.getData());
 		} else {
 			this.json = convertJsonArrayToJsonObject(result.getData());
@@ -428,7 +428,7 @@ public class Item {
 //		asyncFetch.execute(request);
 		
 		PlatformResponse<?> result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to Save failed:"+result.getData()));
 		} else {
@@ -443,7 +443,7 @@ public class Item {
 	public Item[] saveSync() throws ClearBladeException{
 		saveSetup();
 		PlatformResponse<String> result = request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			throw new ClearBladeException("Call to Load failed:"+result.getData());
 		} else {
 			this.json = convertJsonArrayToJsonObject(result.getData());

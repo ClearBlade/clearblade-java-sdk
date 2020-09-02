@@ -3,11 +3,6 @@ package com.clearblade.java.api;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import com.clearblade.java.api.ClearBladeException;
-import com.clearblade.java.api.DataCallback;
-import com.clearblade.java.api.Query;
-import com.clearblade.java.api.QueryResponse;
-import com.clearblade.java.api.internal.PlatformCallback;
 import com.clearblade.java.api.internal.PlatformResponse;
 import com.clearblade.java.api.internal.RequestEngine;
 import com.clearblade.java.api.internal.RequestProperties;
@@ -97,7 +92,7 @@ public class Collection implements Iterable<Item>{
 		RequestProperties headers = new RequestProperties.Builder().method("POST").endPoint("api/data/" + collectionId).body(cols).build();
 		request.setHeaders(headers);
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to fetch failed:"+result.getData()));
 		} else {

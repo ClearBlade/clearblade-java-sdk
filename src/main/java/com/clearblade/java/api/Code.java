@@ -31,7 +31,7 @@ public class Code {
 		request.setHeaders(headers);
 
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to Save failed:"+result.getData()));
 		} else {
@@ -49,7 +49,7 @@ public class Code {
 		request.setHeaders(headers);
 
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to Save failed:"+result.getData()));
 		} else {

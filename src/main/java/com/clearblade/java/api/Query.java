@@ -347,7 +347,7 @@ public class Query {
 //		asyncFetch.execute(request);
 		
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to fetch failed:"+result.getData()));
 		} else {
@@ -363,7 +363,7 @@ public class Query {
 		fetchSetup();
 		PlatformResponse resp = request.execute();
 		Item[] ret;
-		if(resp.getError()) {
+		if(resp.isError()) {
 			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
 		} else {
 			ret = convertJsonArrayToItemArray((String)resp.getData());
@@ -586,7 +586,7 @@ public class Query {
 		changes = new HashMap<String,Object>();
 		
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to fetch failed:"+result.getData()));
 		} else {
@@ -603,7 +603,7 @@ public class Query {
 		updateSetup();
 		PlatformResponse resp = request.execute();
 		Item[] ret;
-		if(resp.getError()) {
+		if(resp.isError()) {
 			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
 		} else {
 			ret = convertJsonArrayToItemArray((String)resp.getData());
@@ -690,7 +690,7 @@ public class Query {
 //		asyncFetch.execute(request);
 		
 		PlatformResponse result= request.execute();
-		if(result.getError()) {
+		if(result.isError()) {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to remove failed:"+result.getData()));
 		} else {
@@ -713,7 +713,7 @@ public class Query {
 		removeSetup();
 		PlatformResponse resp = request.execute();
 		Item[] ret;
-		if(resp.getError()) {
+		if(resp.isError()) {
 			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
 		} else {
 			ret = convertJsonArrayToItemArray((String)resp.getData());
