@@ -32,6 +32,13 @@ public class UserAuth implements Auth {
 
     synchronized public void doAuth() throws AuthException {
 
+        Boolean emailMissing = this._email == null || this._email.length() <= 0;
+        Boolean passwordMissing = this._password == null || this._password.length() <= 0;
+
+        if (emailMissing || passwordMissing) {
+            throw new AuthException("UserAuth needs both email and password");
+        }
+
         JsonObject payload = new JsonObject();
         payload.addProperty("email", this._email);
         payload.addProperty("password", this._password);

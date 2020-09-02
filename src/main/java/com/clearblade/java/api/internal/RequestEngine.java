@@ -14,6 +14,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -126,7 +127,7 @@ public class RequestEngine {
 	 * is usually converted to a more useful object.
 	 * @private
 	 * @return result stores the condition of the ApiRequest
-	 * @throws IllegalArguementExecption will be thrown if headers is null
+	 * @throws IllegalArgumentException will be thrown if headers is null
 	 */
 	private PlatformResponse<String> request(){
 		if(this.headers == null){
@@ -163,27 +164,39 @@ public class RequestEngine {
 			urlConnection.setRequestMethod(method);
 			urlConnection.setConnectTimeout(this.headers.getTimeout());
 
-			//things get ugly here. most requests should just need usertoken, but you need key/secret
+			// things get ugly here. most requests should just need usertoken, but you need key/secret
 			// to get token on the auth request and to register new user. also both token and key/secret 
 			// are needed for logout and auth check requests. so if the url cotains the logout or check 
 			// endpoints, we add all 3, otherwise we add token
-			String reqURL = this.headers.getUri().toLowerCase();
-			boolean isLogoutOrAuthCheck = (reqURL.contains("/user/logout") ||
-											reqURL.contains("/user/checkauth"));
-			boolean isAuthOrReg = (reqURL.contains("/user/auth") ||
-									reqURL.contains("/user/anon") ||
-									reqURL.contains("/user/reg"));
-			String userToken = ClearBlade.getCurrentUser().getAuthToken();
-			if(isLogoutOrAuthCheck){
-				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", Util.getSystemKey());
-				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", Util.getSystemSecret());
-				urlConnection.setRequestProperty("ClearBlade-UserToken", userToken);
-			}else if(isAuthOrReg){
-				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", Util.getSystemKey());
-				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", Util.getSystemSecret());
-			}else if(userToken != null){
-				urlConnection.setRequestProperty("ClearBlade-UserToken", userToken);
+
+            // sets system key and system secret
+
+			urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", Util.getSystemKey());
+			urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", Util.getSystemSecret());
+
+			// sets headers obtained from Auth method
+
+			Map<String, String> authHeaders = ClearBlade.getAuth().getRequestHeaders();
+			for (Map.Entry<String, String> entry : authHeaders.entrySet()) {
+			    urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
 			}
+
+//			String reqUrl = this.headers.getUri().toLowerCase();
+//			boolean isLogoutOrAuthCheck = (reqUrl.contains("/user/logout") || reqUrl.contains("/user/checkauth"));
+//			boolean isAuthOrReg = (reqUrl.contains("/user/auth") || reqUrl.contains("/user/anon") || reqUrl.contains("/user/reg"));
+//
+//			String userToken = ClearBlade.getCurrentUser().getAuthToken();
+//			if(isLogoutOrAuthCheck){
+//				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", Util.getSystemKey());
+//				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", Util.getSystemSecret());
+//				urlConnection.setRequestProperty("ClearBlade-UserToken", userToken);
+//			}else if(isAuthOrReg){
+//				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", Util.getSystemKey());
+//				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", Util.getSystemSecret());
+//			}else if(userToken != null){
+//				urlConnection.setRequestProperty("ClearBlade-UserToken", userToken);
+//			}
+
 			urlConnection.setRequestProperty("Accept", "application/json");
 			urlConnection.setRequestProperty("Accept-Charset", charset);
 			
@@ -205,7 +218,6 @@ public class RequestEngine {
 			responseCode = urlConnection.getResponseCode();
 			responseMessage = urlConnection.getResponseMessage();
 
-			
 			if(responseCode / 100 == 2) {  // If the response code is within 200 range success
 				InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 				String json = readStream(in);
@@ -247,8 +259,6 @@ public class RequestEngine {
 		}
 
 		return result;
-
-
 	}
 	
 	/**
@@ -286,13 +296,11 @@ public class RequestEngine {
 	            return null;
 	          }
 
-			@Override
 			public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
 					throws CertificateException {
 				System.out.println("AARON : checking for client trusted");
 			}
 
-			@Override
 			public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
 					throws CertificateException {
 				System.out.println("AARON : checking for server trusted");

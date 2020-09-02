@@ -113,21 +113,21 @@ public class MQTTClientJava {
 	}
 	
 	private static void logoutUser() {
-		
-		User currentUser = ClearBlade.getCurrentUser();
-		currentUser.logout(new InitCallback() {
-
-			@Override
-			public void done(boolean results) {
-				
-				System.out.println("User logged out");
-			}
-			@Override
-			public void error(ClearBladeException exception) {
-				System.out.println("Logout failed " + exception.getMessage());
-			}
-			
-		});
+//
+//		User currentUser = ClearBlade.getCurrentUser();
+//		currentUser.logout(new InitCallback() {
+//
+//			@Override
+//			public void done(boolean results) {
+//
+//				System.out.println("User logged out");
+//			}
+//			@Override
+//			public void error(ClearBladeException exception) {
+//				System.out.println("Logout failed " + exception.getMessage());
+//			}
+//
+//		});
 	}
 
 }

@@ -52,6 +52,7 @@ public class Main {
             @Override
             public void error(ClearBladeException exception) {
                 System.err.printf("error connecting: %s\n", exception);
+                exception.getCause().printStackTrace();
             }
         };
 

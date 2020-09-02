@@ -40,12 +40,12 @@ public class RequestProperties {
 	public static class Builder {
 
 		//optional 
-		private String uri = ClearBlade.getUri();
+		private String uri;
 		private String body = "";
 		private String endPoint = "";
 		private String method = "GET";
 		private String qs = "";
-		private int timeout = ClearBlade.getCallTimeOut();
+		private int timeout;
 
 		/**
 		 * Returns an html encoded string
@@ -90,7 +90,8 @@ public class RequestProperties {
 		 * 
 		 */
 		public Builder () {
-
+		    uri = ClearBlade.getPlatformUrl();
+		    timeout = ClearBlade.getCallTimeout();
 		}
 
 		/** 
@@ -235,7 +236,7 @@ public class RequestProperties {
 		if(builder.timeout != 0) {
 			timeout = builder.timeout;
 		} else {
-			timeout = ClearBlade.getCallTimeOut();
+			timeout = ClearBlade.getCallTimeout();
 		}
 		if(!endPoint.equals(""))
 			uri += "/" + endPoint;

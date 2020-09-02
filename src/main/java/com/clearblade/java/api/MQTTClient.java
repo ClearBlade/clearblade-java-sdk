@@ -2,6 +2,7 @@ package com.clearblade.java.api;
 
 import java.util.HashSet;
 
+import com.clearblade.java.api.auth.Auth;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -13,7 +14,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 
 public class MQTTClient implements MqttCallback {
 	
-	public String url = ClearBlade.getMessageUrl();
+	public String url;
 	private static boolean isStarted = false; 
 	HashSet<String> subscribed;
 	int qualityOfService;
@@ -25,19 +26,14 @@ public class MQTTClient implements MqttCallback {
 	private static MqttClient mqttClient;
 	
 	private MessageCallback messageReceivedCallback;
-	
-	
+
 	public MQTTClient(String clientID) {
-		
-		clientIdentifier = clientID;
-		qualityOfService = 0;
-		connectToMQTTService();
-		subscribed = new HashSet<String>();
+		this(clientID, 0);
 	}
 	
-	
 	public MQTTClient(String clientID, int qos) {
-		
+
+		url = ClearBlade.getMessagingUrl();
 		clientIdentifier = clientID;
 		qualityOfService = qos;
 		connectToMQTTService();
@@ -55,20 +51,15 @@ public class MQTTClient implements MqttCallback {
 		
 		opts = new MqttConnectOptions();
 		opts.setCleanSession(true);
-		User curUser = ClearBlade.getCurrentUser(); 
-		
-		if (curUser.getAuthToken() == null) {
-			
-			System.out.println("Auth token is null");
+
+		Auth auth = ClearBlade.getAuth();
+		if (!auth.isAuthed()) {
+			System.out.println("not authenticated");
 			return;
 		}
-		
-		else {
-			
-			opts.setUserName(curUser.getAuthToken());
-			opts.setPassword(Util.getSystemKey().toCharArray());
-		}
-		
+
+		opts.setUserName(auth.getToken());
+		opts.setPassword(Util.getSystemKey().toCharArray());
 		connect();
 		
 	}
@@ -76,7 +67,7 @@ public class MQTTClient implements MqttCallback {
 	public void connect() {
 		
 		try {
-			
+
 			mqttClient = new MqttClient(url, clientIdentifier, memoryPersistance);
 			mqttClient.connect(opts);
 			mqttClient.setCallback(this);
