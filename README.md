@@ -89,7 +89,7 @@ InitOptions initOptions = new InitOptions()
     .setCallTimeout(Integer)
 
     // Allow connecting to a platform server without a signed SSL certificate
-    .setAllowUntrusted(Boolean)
+    .setAllowUntrusted(Boolean);
 ```
 
 After configuring your options object, you can use it in your initialize call:
