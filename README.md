@@ -1,5 +1,26 @@
+# QuickStart
+
+The ClearBlade Java SDK uses [Maven](https://maven.apache.org/) to manage the project and its dependencies. Since 
+most IDEs support Maven, you can refer to your preferred IDE documentation to see how to import and compile Maven-based
+projects.
+
+Alternatively, if you have Maven installed, you can compile and install the ClearBlade Java SDK to your local machine
+using the following command from the root of the ClearBlade Java SDK repository:
+
+```
+mvn install
+```
+
+The command above will install the currently checked out version.
+
+#### Dependencies
+
+Check [pom.xml](pom.xml) for reference.
+
 # API References
+
 ## Authenticating
+
 Authentication is the very first and crucial step in using the ClearBlade Java API for your application. You will not be able to access any features of the ClearBlade platform without Authentication.
 
 You will need to import the following packages in your java file:
@@ -9,6 +30,7 @@ You will need to import the following packages in your java file:
 There are two ways to authenticate to the ClearBlade platform:
 
 #### Without Options
+
 ```java
 String SYSTEM_KEY = "your_systemkey";
 String SYSTEM_SECRET = "your_systemsecret";
@@ -30,6 +52,7 @@ clearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initCallback);
 ```
 
 #### With Options
+
 ```java
 String SYSTEM_KEY = "your_systemkey";
 String SYSTEM_SECRET = "your_systemsecret";
@@ -66,6 +89,7 @@ clearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initOptions, initCallback);
 ```
 
 ## Code
+
 The ClearBlade Java API allows executing a Code Service on the platform from your Java application.
 
 **Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Code API.**
@@ -75,6 +99,7 @@ You need to import the following packages to use the Code API:
 ```import com.clearblade.java.api.CodeCallback;```
 
 #### Code Service Without Parameters
+
 A code service which does not take any parameters can be executed as follows:
 ```java
 String serviceName = "yourServiceName";
@@ -98,6 +123,7 @@ codeService.executeWithoutParams(codeCallback);
 ```
 
 #### Code Service With Parameters
+
 A Json Object of parameters needs to be passes to the ```Code``` class constructor along with the service name:
 ```java
 String serviceName = "yourServiceName";
@@ -131,12 +157,15 @@ Import the following packages:
 -```import com.clearblade.java.api.DataCallback;```
 
 ## Query
+
 Create a new ```Query``` object:
 ```java
 String collectionID = "yourCollectionID";
 Query query = new Query(collectionID);
 ```
+
 #### query.EqualTo(String field, Object value)
+
 ```java
 /**
 	 * Creates an equality clause in the query object
@@ -151,6 +180,7 @@ Query query = new Query(collectionID);
 ```
 
 #### query.notEqual(String field, Object value)
+
 ```java
 /**
 	 * Creates a non-equality clause in the query object
@@ -165,6 +195,7 @@ Query query = new Query(collectionID);
 ```
 
 #### query.greaterThan(String field, Object value)
+
 ```java
 /**
 	 * Creates a greater than clause in the query object
@@ -177,7 +208,9 @@ Query query = new Query(collectionID);
 	 });
 	 /* Will return all the items that are greater than age 18 if present*/
 ```
+
 #### query.greaterThanEqualTo(String field, Object value)
+
 ```java
 /**
 	 * Creates a greater than or equal to clause in the query object
@@ -190,7 +223,9 @@ Query query = new Query(collectionID);
 	 });
 	 /* Will return all the items that are greater than equal to age 18 if present*/
 ```
+
 #### query.lessThan(String field, Object value)
+
 ```java
 /**
 	 * Creates a less than clause in the query object
@@ -203,7 +238,9 @@ Query query = new Query(collectionID);
 	 });
 	 /* Will return all the items that are less than age 18 if present*/
 ```
+
 #### query.lessThanEqualTo(String field, Object value)
+
 ```java
 /**
 	 * Creates a less than equal to clause in the query object
@@ -216,7 +253,9 @@ Query query = new Query(collectionID);
 	 });
 	 /* Will return all the items that are less than equal to age 18 if present*/
 ```
+
 #### query.update(final DataCallback callback)
+
 ```java
 	 /* Call an update on all items matching the query criteria to conform to the changes that have been added via the addChange method */
 	 	query.equalTo("name", "John");
@@ -232,7 +271,9 @@ Query query = new Query(collectionID);
 	 		}
 	 	});
 ```
+
 #### query.remove(final DataCallback callback)
+
 ```java
 	 /* Removes on all items matching the query criteria within a Collection */
 
@@ -248,16 +289,20 @@ Query query = new Query(collectionID);
 	 		}
 	 	});
 ```
+
 The page size and page number of the results to be returned can be set by using ```query.setPageSize(int pageSize)``` and ```query.setPageNum(int pageNum)```.
 
 ## Collections
+
 The ```Collection``` class contains functions to **fetch (GET)**, **update (PUT)**, **create (POST)** and **remove (DELETE)** a collection using the REST API.
 A collection object needs to be created first:
 ```java
 String collectionID = "yourCollectionID";
 Collection collection = new Collection(collectionID);
 ```
+
 #### collection.fetch(Query query, final DataCallback callback)
+
 ```java
 /**
 	 * Gets all Items that match Query criteria from the platform in the Cloud.
@@ -279,7 +324,9 @@ collection.fetch(query, new DataCallback() {
     }
 });
 ```
+
 #### collection.fetchAll(final DataCallback callback)
+
 ```java
 /**
 	 * Gets all Items that are saved in the collection in the Cloud.
@@ -299,7 +346,9 @@ collection.fetchAll(new DataCallback() {
     }
 });
 ```
+
 #### collection.update(final DataCallback callback)
+
 ```java
 Query query = new Query(collectionID);
 query.equalTo("name", "John");
@@ -315,7 +364,9 @@ collection.update(new DataCallback() {
     }
 });
 ```
+
 #### collection.create(String columns, final DataCallback callback)
+
 ```java
 String column = "{\"columnName\":\"newColumn\"}";
 collection.create(column, new DataCallback() {
@@ -329,7 +380,9 @@ collection.create(column, new DataCallback() {
     }
 });
 ```
+
 #### collection.remove(DataCallback callback)
+
 ```java
 /**
 	 * Deletes all Items that are saved in the collection in the Cloud synchronously.
@@ -361,6 +414,7 @@ You will need to import the following packages for using the Messaging API:
 ```import com.clearblade.java.api.MessageCallback;```
 
 ### Initialize and Connect
+
 The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT Broker.
 ```java
 String clientID = “ClearBladeJavaTest”;
@@ -376,6 +430,7 @@ MQTTClient mqttClient = new MQTTClient(clientID, qos);
 After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the ```Message``` object.
 
 ### Publish
+
 The publish function takes a topic and message of type ```String``` and publishes to the MQTT Broker.
 ```java
 String topic = "yourTopic";
@@ -384,6 +439,7 @@ mqttClient.publish(topic, message);
 ```
 
 ### Subscribe
+
 The subscribe function takes a topic of type ```String``` and a callback to handle the arrived messages.
 ```java
 String topic = "topicToSubscribe";
@@ -397,6 +453,7 @@ mqttClient.subscribe(topic, messageCallback);
 ```
 
 ### Unsubscribe
+
 The unsubscribe function takes a topic of type ```String``.
 ```java
 String topic = "topicToUnsubscribe";
@@ -404,17 +461,11 @@ mqttClient.unsubscribe(topic);
 ```
 
 ### Disconnect
+
 The disconnect function is used to disconnect from the MQTT Broker. **Note that this does not disconnect the user from the ClearBlade platform. User logout needs to be called separately.**
 ```java
 mqttClient.disconnect();
 ```
-# Setup
-
-#### Dependencies
-The ClearBlade Java API requires three JAR files that should be copied to your project’s ```/libs``` folder:
--```ClearBlade_Java_API.jar```
--```org.eclipse.paho.client.mqttv3-1.0.2.jar```
--```gson-2.3.jar```
 
 # Example
 
@@ -557,19 +608,3 @@ public class MQTTClientJava {
 # JavaDoc
 
 The Javadoc for the Java API can be found at https://docs.clearblade.com/v/3/static/javaapi/index.html
-
-# QuickStart
-
-#### Installation
-Java clients using the ClearBlade java SDK can be written in any idea of your choice.  Popular recommended IDEs include
-- Eclipse
-- IntelliJ
-- NetBeans
-
-
-#### Dependencies
-The ClearBlade Java API requires three JAR files that should be copied to your project’s ```/libs``` folder:
--```ClearBlade_Java_API.jar```
--```org.eclipse.paho.client.mqttv3-1.0.2.jar```
--```gson-2.3.jar```
-
