@@ -34,7 +34,7 @@ public class DeviceAuth implements Auth {
         boolean activeKeyMissing = this._activeKey == null || this._activeKey.length() <= 0;
 
         if (systemKeyMissing || deviceNameMissing || activeKeyMissing) {
-            throw new AuthException("DeviceAuth needs all system key, device name, and device key");
+            throw new AuthException("DeviceAuth needs all system key, device name, and active key");
         }
 
         JsonObject payload = new JsonObject();
