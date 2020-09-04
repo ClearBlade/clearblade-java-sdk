@@ -1,6 +1,6 @@
 # QuickStart
 
-The ClearBlade Java SDK uses [Maven](https://maven.apache.org/) to manage the project and its dependencies. Since 
+The ClearBlade Java SDK uses [Maven](https://maven.apache.org/) to manage the project and its dependencies. Since
 most IDEs support Maven, you can refer to your preferred IDE documentation to see how to import and compile Maven-based
 projects.
 
@@ -17,15 +17,27 @@ The command above will install the currently checked out version.
 
 Check [pom.xml](pom.xml) for reference.
 
+# Examples
+
+- [User auth example](src/main/java/com/clearblade/examples/UserAuthExample.java).
+- [Device auth example](src/main/java/com/clearblade/examples/DeviceAuthExample.java).
+- [Legacy example](src/main/java/com/clearblade/examples/MQTTClientJava.java).
+
 # API References
 
-## Authenticating
+## Initialization
 
 Authentication is the very first and crucial step in using the ClearBlade Java API for your application. You will not be able to access any features of the ClearBlade platform without Authentication.
 
 You will need to import the following packages in your java file:
-``` import com.clearblade.java.api.ClearBlade; ```
-```import com.clearblade.java.api.InitCallback;```
+
+```java
+import com.clearblade.java.api.ClearBlade;
+```
+
+```java
+import com.clearblade.java.api.InitCallback;
+```
 
 There are two ways to authenticate to the ClearBlade platform:
 
@@ -47,46 +59,73 @@ InitCallback initCallback = new InitCallback(){
     }
 };
 
-ClearBlade clearBlade = new ClearBlade();
 clearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initCallback);
 ```
 
 #### With Options
 
+Use the `com.clearblade.java.api.InitOptions` class to construct your options object:
+
+```java
+import com.clearblade.java.api.InitOptions;
+
+InitOptions initOptions = new InitOptions()
+
+    // URL of the platform to use (default: https://platform.clearblade.com)
+    .setPlatformUrl(String)
+
+    // URL of the messaging backend to use (default: tcp://messaging.clearblade.com:1883)
+    .setMessagingUrl(String)
+
+    // Authorization method to use (default: com.clearblade.java.api.auth.AnonAuth)
+    .setAuth(com.clearblade.java.api.auth.Auth)
+
+    // Enable internal ClearBlade JDK logging (default: false)
+    .setEnableLogging(Boolean)
+
+    // Timeout in milliseconds for API calls (default: 30000)
+    .setCallTimeout(Integer)
+
+    // Allow connecting to a platform server without a signed SSL certificate
+    .setAllowUntrusted(Boolean)
+```
+
+After configuring your options object, you can use it in your initialize call:
+
 ```java
 String SYSTEM_KEY = "your_systemkey";
 String SYSTEM_SECRET = "your_systemsecret";
-HashMap<String, Object> initOptions = new HashMap<String, Object>();
-
-/**Available init options:
-	 * 	email - String to register or log-in as specific user (required if password is given) Default - null
-	 * 	password - password String for given user (required if email is given) Default - null
-	 * 	platformURL - Custom URL for the platform Default - https://platform.clearblade.com
-	 * 	messagingURL - Custom Messaging URL Default - tcp://messaging.clearblade.com:1883
-	 * 	registerUser - Boolean to tell if you'd like to attempt registering the given user Default - false
-	 * 	logging - Boolean to enable ClearBlade Internal API logging Default - false
-	 * 	callTimeout - Int number of milliseconds for call timeouts Default - 30000 (30 seconds)
-	 *  allowUntrusted - Boolean to connect to a platform server without a signed SSL certificate Default - false
-*/
 
 InitCallback initCallback = new InitCallback(){
     @Override
     public void done(boolean results){
-	    //initialization successful
-	}
-	@Override
-	public void error(ClearBladeException exception){
-	   //initialization failed, given a ClearBladeException with the cause
-        Log.i("Failed init", "holy cow!!" + exception.getLocalizedMessage());
+	// initialization successful
+    }
+    @Override
+    public void error(ClearBladeException exception){
+	// initialization failed
     }
 };
 
-initOptions.put("platformURL", "https://yourURL.com");
-initOptions.put("messagingURL", "tcp://yourURL:1883");
-
-ClearBlade clearBlade = new ClearBlade();
-clearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initOptions, initCallback);
+ClearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initOptions, initCallback);
 ```
+
+## Authentication
+
+Authentication is handled by passing an implementation of the `com.clearblade.java.api.auth.Auth`
+interface to the `com.clearblade.java.api.InitOptions/setAuth` method. By default,
+it uses a `com.clearblade.java.api.auth.AnonAuth` instance. Here's an example
+using user authentication:
+
+```java
+import com.clearblade.java.api.InitOptions;
+import com.clearblade.java.api.auth.UserAuth;
+
+InitOptions initOptions = new InitOptions()
+    .setAuth(new UserAuth("YOUR EMAIL", "YOUR PASSWORD");
+```
+
+Check the `com.clearblade.java.api.auth` package for more authentication methods.
 
 ## Code
 
@@ -467,144 +506,7 @@ The disconnect function is used to disconnect from the MQTT Broker. **Note that 
 mqttClient.disconnect();
 ```
 
-# Example
-
-Here's an example of a ClearBlade Java Client that initializes with the ClearBlade platform, connects to the MQTT broker and publishes and subscribes to messages. Then it disconnects from the MQTT Broker and logs out the user.
-```java
-package com.example.client;
-
-import java.util.HashMap;
-
-import com.clearblade.java.api.*;
-
-public class MQTTClientJava {
-
-	private static MQTTClient mqttClient;
-	private static boolean isInit = false;
-
-	public static void Main(String[] args) {
-
-		initClearBlade();
-		if (isInit) {
-
-			connectToMQTT();
-
-			try {
-				Thread.sleep(2000);
-			} catch(InterruptedException ex) {
-				ex.getMessage();
-			}
-
-			subscribe("hello");
-
-			try {
-				Thread.sleep(5000);
-			} catch(InterruptedException ex) {
-				ex.getMessage();
-			}
-
-			publish("hello", "this is a test");
-
-			try {
-				Thread.sleep(5000);
-			} catch(InterruptedException ex) {
-				ex.getMessage();
-			}
-
-			mqttClient.disconnect();
-
-			logoutUser();
-		}
-	}
-
-	private static void initClearBlade() {
-
-		InitCallback initCallback = new InitCallback() {
-
-			@Override
-			public void done(boolean results) {
-
-				System.out.println("ClearBlade platform initialized");
-				isInit = true;
-			}
-
-			@Override
-			public void error(ClearBladeException error) {
-
-				isInit = false;
-				String message = error.getMessage();
-				System.out.println(message);
-			}
-		};
-
-		String systemKey = "yourSystemKey";
-		String systemSecret = "yourSystemSecret";
-		String userEmail = "example@clearblade.com";
-		String userPassword = "password";
-		String platformURL = "https://example.clearblade.com";
-		String messagingURL = "tcp://example.clearblade.com:1883";
-
-		HashMap<String, Object> options = new HashMap<String, Object>();
-		options.put("email", userEmail);
-		options.put("password", userPassword);
-		options.put("platformURL", platformURL);
-		options.put("messagingURL", messagingURL);
-
-		ClearBlade.initialize(systemKey, systemSecret, options, initCallback);
-	}
-
-	private static void connectToMQTT() {
-
-		mqttClient = new MQTTClient("clientID-test", 1);
-	}
-
-	private static void subscribe(String topic) {
-
-		MessageCallback messageCallback = new MessageCallback() {
-
-			@Override
-			public void done(String topic, String message){
-
-				System.out.println("Topic: " + topic +" Message received: " + message);
-			}
-
-			@Override
-			public void error(ClearBladeException exception) {
-
-				String message = exception.getLocalizedMessage();
-				System.out.println("CB Subscribe Exception: " + message);
-			}
-		};
-
-		mqttClient.subscribe(topic, messageCallback);
-	}
-
-	private static void publish(String topic, String payload) {
-
-		mqttClient.publish(topic, payload);
-	}
-
-	private static void logoutUser() {
-
-		User currentUser = ClearBlade.getCurrentUser();
-		currentUser.logout(new InitCallback() {
-
-			@Override
-			public void done(boolean results) {
-
-				System.out.println("User logged out");
-			}
-			@Override
-			public void error(ClearBladeException exception) {
-				System.out.println("Logout failed " + exception.getMessage());
-			}
-
-		});
-	}
-
-}
-```
-
 # JavaDoc
 
-The Javadoc for the Java API can be found at https://docs.clearblade.com/v/3/static/javaapi/index.html
+The Javadoc for the Java API can be found [here](https://docs.clearblade.com/v/3/static/javaapi/index.html).
+
