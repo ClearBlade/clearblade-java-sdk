@@ -27,7 +27,9 @@ Check [pom.xml](pom.xml) for reference.
 
 ## Initialization
 
-Authentication is the very first and crucial step in using the ClearBlade Java API for your application. You will not be able to access any features of the ClearBlade platform without Authentication.
+Initialization is the very first and crucial step in using the ClearBlade Java
+API for your application. You will not be able to access any features of the
+ClearBlade platform without initialization.
 
 You will need to import the following packages in your java file:
 
@@ -39,7 +41,7 @@ import com.clearblade.java.api.ClearBlade;
 import com.clearblade.java.api.InitCallback;
 ```
 
-There are two ways to authenticate to the ClearBlade platform:
+There are two ways to initialize the SDK:
 
 #### Without Options
 
@@ -110,19 +112,23 @@ InitCallback initCallback = new InitCallback(){
 ClearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initOptions, initCallback);
 ```
 
-## Authentication
+## Authentication methods
 
 Authentication is handled by passing an implementation of the `com.clearblade.java.api.auth.Auth`
 interface to the `com.clearblade.java.api.InitOptions/setAuth` method. By default,
-it uses a `com.clearblade.java.api.auth.AnonAuth` instance. Here's an example
-using user authentication:
+it uses a `com.clearblade.java.api.auth.AnonAuth` instance.
+
+Here's a small snippet that authenticates to the platform using user authentication:
 
 ```java
+import com.clearblade.java.api.ClearBlade;
 import com.clearblade.java.api.InitOptions;
 import com.clearblade.java.api.auth.UserAuth;
 
 InitOptions initOptions = new InitOptions()
     .setAuth(new UserAuth("YOUR EMAIL", "YOUR PASSWORD");
+
+ClearBlade.initialize("YOUR SYSTEM KEY", "YOUR SYSTEM SECRET", initOptions, ...);
 ```
 
 Check the `com.clearblade.java.api.auth` package for more authentication methods.
