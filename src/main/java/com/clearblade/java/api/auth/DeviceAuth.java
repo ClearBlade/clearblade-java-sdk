@@ -63,11 +63,16 @@ public class DeviceAuth implements Auth {
     }
 
     public void doCheck() throws AuthException {
-        throw new AuthException("doCheck not supported for DeviceAuth");
+        if (!this.isAuthed()) {
+            throw new AuthException("unable to check login for device");
+        }
     }
 
     public void doLogout() throws AuthException {
-        throw new AuthException("doLogout not supported for DeviceAuth");
+        if (!this.isAuthed()) {
+            throw new AuthException(("unable to logout device when not authenticated"));
+        }
+        this._token = null;
     }
 
     public boolean isAuthed() {

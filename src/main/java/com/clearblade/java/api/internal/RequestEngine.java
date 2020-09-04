@@ -145,7 +145,7 @@ public class RequestEngine {
 		PlatformResponse<String> result = null;
 		SSLContext ctx=null;
 		try {
-			if (isSSL() && ClearBlade.getAllowUntrusted()) {
+			if (isSSL() && ClearBlade.isAllowUntrusted()) {
 				ctx = createUntrustedManager(ctx);
 				HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
 			}
@@ -171,8 +171,16 @@ public class RequestEngine {
 
             // sets system key and system secret
 
-			urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", Util.getSystemKey());
-			urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", Util.getSystemSecret());
+			String systemKey = Util.getSystemKey();
+			String systemSecret = Util.getSystemSecret();
+
+			if (systemKey != null) {
+				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMKEY", systemKey);
+			}
+
+			if (systemSecret != null) {
+				urlConnection.setRequestProperty("CLEARBLADE-SYSTEMSECRET", systemSecret);
+			}
 
 			// sets headers obtained from Auth method
 
@@ -181,6 +189,10 @@ public class RequestEngine {
 			    urlConnection.setRequestProperty(entry.getKey(), entry.getValue());
 			}
 
+//			// set headers (old legacy code, commented out for reference)
+//			// TODO: do we really need to set headers based on path? We should be able to set all headers without
+//			// 		 complex conditionals and let the server choose what headers it wants to use or ignore.
+//
 //			String reqUrl = this.headers.getUri().toLowerCase();
 //			boolean isLogoutOrAuthCheck = (reqUrl.contains("/user/logout") || reqUrl.contains("/user/checkauth"));
 //			boolean isAuthOrReg = (reqUrl.contains("/user/auth") || reqUrl.contains("/user/anon") || reqUrl.contains("/user/reg"));
