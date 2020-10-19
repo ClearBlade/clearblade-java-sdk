@@ -10,11 +10,11 @@ package com.clearblade.java.api;
 @Deprecated
 public class Message extends MQTTClient {
 
-    public Message(String clientID) {
+    public Message(String clientID) throws ClearBladeException {
         super(clientID);
     }
 
-    public Message(String clientID, int qos) {
+    public Message(String clientID, int qos) throws ClearBladeException {
         super(clientID, qos);
     }
 }

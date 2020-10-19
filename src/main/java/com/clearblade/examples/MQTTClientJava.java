@@ -8,7 +8,8 @@ public class MQTTClientJava {
 
 	private static MQTTClient mqttClient;
 	private static boolean isInit = false;
-	public static void main(String[] args) {
+
+	public static void main(String[] args) throws ClearBladeException{
 		
 		initClearBlade();
 		if (isInit) {
@@ -80,12 +81,11 @@ public class MQTTClientJava {
 		ClearBlade.initialize(systemKey, systemSecret, options, initCallback);
 	}
 	
-	private static void connectToMQTT() {
-		
+	private static void connectToMQTT() throws ClearBladeException {
 		mqttClient = new MQTTClient("clientID-test", 1);
 	}
 	
-	private static void subscribe(String topic) {
+	private static void subscribe(String topic) throws ClearBladeException {
 		
 		MessageCallback messageCallback = new MessageCallback() {
 			
@@ -106,7 +106,7 @@ public class MQTTClientJava {
 		mqttClient.subscribe(topic, messageCallback);
 	}
 	
-	private static void publish(String topic, String payload) {
+	private static void publish(String topic, String payload) throws ClearBladeException {
 		mqttClient.publish(topic, payload);
 	}
 	

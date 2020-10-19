@@ -1,26 +1,25 @@
 package com.clearblade.java.api;
 
 public class MessageCallback {
-	public void done(String topic, String message){
-		// override to get a string message
-	}
 
-	public void error(ClearBladeException exception){
-		// override to catch an error
-	}
-	
-	public void done(String topic, Item message){
-		// override to get an Item message
-	}
-	
-	public void done(String topic, byte[] message){
-		// override to get a byte[] message
-	}
-	public void done(String topic, String message, int qos) {
-	    // override to get a string message with qos
-	}
-	
-	public void done(History history){
-	    // override to get History
-	}
+	/**
+	 * Override to catch an error.
+	 * @param exception the exception that was thrown
+	 */
+	public void error(ClearBladeException exception) {}
+
+	/**
+	 * Override to receive a message.
+	 * @param topic topic the message is from
+	 * @param message message content
+	 */
+	public void done(String topic, byte[] message) {}
+
+	/**
+	 * Override to receive a message as a string.
+	 * @param topic topic the message is from
+	 * @param message message content
+	 */
+	public void done(String topic, String message) {}
+
 }

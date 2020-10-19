@@ -1,191 +1,318 @@
 package com.clearblade.java.api;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.clearblade.java.api.auth.Auth;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.*;
 
-public class MQTTClient implements MqttCallback {
-	
-	public String url;
-	private static boolean isStarted = false; 
-	HashSet<String> subscribed;
-	int qualityOfService;
-	String clientIdentifier;
-	
-	private static MemoryPersistence memoryPersistance; 		
-	private static MqttConnectOptions opts;			
 
-	private static MqttClient mqttClient;
-	
-	private MessageCallback messageReceivedCallback;
+public class MQTTClient implements MqttCallbackExtended {
 
-	public MQTTClient(String clientID) {
-		this(clientID, 0);
+    @FunctionalInterface
+	public interface OnConnectionComplete {
+		void onConnectionComplete(boolean reconnected, String url);
 	}
-	
-	public MQTTClient(String clientID, int qos) {
 
-		url = ClearBlade.getMessagingUrl();
-		clientIdentifier = clientID;
-		qualityOfService = qos;
-		connectToMQTTService();
-		subscribed = new HashSet<String>();
+	@FunctionalInterface
+	public interface OnConnectionLost {
+	    void onConnectionLost(Throwable cause);
 	}
-	
-	
-	/* First this method should be called in order to connect to the MQTT service. This method checks for the auth token and if its null,
-	 * it terminates the connection attempt. If an auth token is available, it attempts to connect.
+
+	/**
+	 * The messaging URL this client is using.
 	 */
-	public void connectToMQTTService() {
-		
-		if (isStarted)
-			return;
-		
-		opts = new MqttConnectOptions();
-		opts.setCleanSession(true);
+	public final String url;
 
-		Auth auth = ClearBlade.getAuth();
+	/**
+	 * The authentication method to use for the connection.
+	 */
+	private final Auth auth;
+
+	/**
+	 * The system key of the system we are connecting to.
+	 */
+	private final String systemKey;
+
+	/**
+	 * Unique identifier for this MQTT client.
+	 */
+	public final String clientIdentifier;
+
+	/**
+	 * Quality of service to use when no specified on the publish / subscribe methods.
+	 */
+	int defaultQualityOfService;
+
+	/**
+	 * Auto-reconnect when connection is lost.
+	 */
+	private boolean autoReconnect;
+
+	/**
+	 * paho MqttClient instance.
+	 */
+	private MqttClient mqttClient;
+
+	/**
+	 * Contains the MessageCallback instances for each topic. This lets the user have different handling logic
+	 * depending on the topic.
+	 */
+	private Map<String, MessageCallback> callbackByTopic;
+
+	/**
+	 * Functional-interface callback for connection complete events.
+	 */
+	private OnConnectionComplete onConnectionComplete;
+
+	/**
+	 * Functional-interface callback for connection lost events.
+	 */
+	private OnConnectionLost onConnectionLost;
+
+	/**
+	 * Creates a new MQTTClient instance using the given identifier. URL and auth method will be obtained from the
+	 * global ClearBlade singleton.
+	 */
+	public MQTTClient(String clientIdentifier) throws ClearBladeException {
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, 0, true);
+	}
+
+	/**
+	 * Creates a new MQTTClient instance using the given identifier and quality of service. URL and auth method will
+	 * be obtained from the global ClearBlade singleton.
+	 */
+	public MQTTClient(String clientIdentifier, int qualityOfService) throws ClearBladeException {
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, true);
+	}
+
+	/**
+	 * Creates a new MQTTClient instance using the given information.
+	 * @param url the messaging url to connect to
+	 * @param auth the authentication method to use
+	 * @param clientIdentifier the unique identifier for this client
+	 * @param qualityOfService the default quality of service to use
+	 */
+	public MQTTClient(String url, Auth auth, String systemKey, String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
+
+		this.url = url;
+		this.auth = auth;
+		this.systemKey = systemKey;
+		this.clientIdentifier = clientIdentifier;
+		this.defaultQualityOfService = qualityOfService;
+		this.autoReconnect = autoReconnect;
+		this.mqttClient = null;
+		this.callbackByTopic = new HashMap<>();
+		this.onConnectionComplete = null;
+		this.onConnectionLost = null;
+
+		this.connect();
+	}
+
+	public boolean getAutoreconnect() {
+	    return this.autoReconnect;
+	}
+
+	public void setAutoReconnect(boolean autoReconnect) {
+		this.autoReconnect = autoReconnect;
+	}
+
+	/**
+	 * Callback to use when connection is complete.
+	 */
+	public void onConnectionComplete(OnConnectionComplete callback) {
+	    this.onConnectionComplete = callback;
+	}
+
+	/**
+	 * Callback to use when connection is lost.
+	 */
+	public void onConnectionLost(OnConnectionLost callback) {
+		this.onConnectionLost = callback;
+	}
+
+	/**
+	 * Tries to connect to the MQTT service specified by the supplied parameters during object constructions.
+	 * @throws ClearBladeException if connection fails.
+	 */
+	public void connect() throws ClearBladeException {
+
+	    if (mqttClient != null && mqttClient.isConnected()) {
+	    	return;
+		}
+
 		if (!auth.isAuthed()) {
-			System.out.println("not authenticated");
-			return;
+			throw new IllegalStateException("auth method not authenticated");
 		}
 
-		opts.setUserName(auth.getToken());
-		opts.setPassword(Util.getSystemKey().toCharArray());
-		connect();
-		
-	}
-	
-	public void connect() {
-		
+		MqttConnectOptions options = new MqttConnectOptions();
+		options.setCleanSession(true);
+		options.setUserName(auth.getToken());
+		options.setPassword(systemKey.toCharArray());
+		options.setConnectionTimeout(5);
+		options.setAutomaticReconnect(autoReconnect);
+
 		try {
-			mqttClient = new MqttClient(url, clientIdentifier, memoryPersistance);
-			mqttClient.connect(opts);
+			mqttClient = new MqttClient(url, clientIdentifier);
 			mqttClient.setCallback(this);
-			isStarted = true;
-			System.out.println("Connected to the MQTT Service");
+			mqttClient.connect(options);
+
+		} catch (MqttException e) {
+			String errmsg = String.format("(MQTTClient) could not connect to %s: %s", url, e.getMessage());
+			throw new ClearBladeException(errmsg, e);
 		}
-		
-		catch(MqttException e) {
-			
-			System.out.println("Catching exception for MQTT connect");
-			e.printStackTrace();
-		}
-		
 	}
-	
-	public boolean disconnect() {
-		
-		if (!isStarted)
+
+	/**
+	 * Tries to disconnect from the MQTT service. This function will always return true (due to backwards compatibility)
+	 * and will instead throw an exception if disconnection fails.
+	 * @return always true for backward compatibility
+	 * @throws ClearBladeException if disconnection fails
+	 */
+	public boolean disconnect() throws ClearBladeException {
+
+		if (mqttClient == null) {
 			return true;
-		
-		if (mqttClient != null) {
-			
-			try {
-				
-				mqttClient.disconnect();
-			}
-			
-			catch(MqttException e) {
-				
-				e.printStackTrace();
-			}
-			
+		}
+
+		try {
+			mqttClient.disconnect();
 			mqttClient = null;
-			isStarted = false;
-			System.out.println("Disconnected from the MQTT Service");
-			return true;
+		} catch(MqttException e) {
+			String errmsg = String.format("(MQTTClient) disconnect error");
+			throw new ClearBladeException(errmsg, e);
 		}
-		
-		else {
-			
-			System.out.println("Unable to Disconnect");
-			return false;
-		}
+
+		return true;
 	}
-	
-	public void publish (String topic, String message) {
-		
-		publish(topic, message.getBytes(), qualityOfService);
+
+	/**
+	 * Publishes the given message to the given topic.
+	 * @param topic topic to publish to
+	 * @param message message to publish
+	 * @throws ClearBladeException if publish fails
+	 */
+	public void publish(String topic, String message) throws ClearBladeException {
+		publish(topic, message.getBytes(), defaultQualityOfService);
 	}
-	
-	public void publish(String topic, byte[] payload, int qos) {
+
+	/**
+	 * Publishes the given message (bytes) to the given topic, using the given quality of service.
+	 * @param topic topic to publish to
+	 * @param payload message to publish
+	 * @param qos quality of service
+	 * @throws ClearBladeException if publish fails
+	 */
+	public void publish(String topic, byte[] payload, int qos) throws ClearBladeException {
 		
 		try {
-			
 			mqttClient.publish(topic, payload, qos, false);
-			System.out.println("Message published");
-		} 
-		
-		catch (MqttPersistenceException e) {
-			
-			e.printStackTrace();
-		} 
-		
-		catch (MqttException e) {
-			
-			e.printStackTrace();
+
+		} catch (MqttException e) {
+			String errmsg = String.format("(MQTTClient) publish error: %s", e.getMessage());
+			throw new ClearBladeException(errmsg, e);
 		}
 	}
-	
-	public void subscribe(String topic, MessageCallback callback) {
-		subscribe(topic, qualityOfService, callback);
+
+	/**
+	 * Subscribes to the given topic using the given message callback for handling messages.
+	 * @param topic topic to subscribe to
+	 * @param callback callback to use for incoming messages or errors
+     * @throws ClearBladeException when subscription fails
+	 */
+	public void subscribe(String topic, MessageCallback callback) throws ClearBladeException {
+		subscribe(topic, defaultQualityOfService, callback);
 	}
-	
-	public void subscribe(String topic, int qos, MessageCallback callback) {
+
+	/**
+	 * Subscribes to the given topic using the given quality of service and message callback for handling messages.
+	 * @param topic topic to subscribe to
+	 * @param qos quality of service
+	 * @param callback callback to use for incoming messages or errors
+	 * @throws ClearBladeException when subscription fails
+	 */
+	public void subscribe(String topic, int qos, MessageCallback callback) throws ClearBladeException {
 		try {
 			mqttClient.subscribe(topic, qos);
-			subscribed.add(topic);
-			messageReceivedCallback = callback;
-			System.out.printf("subscribed to topic: %s%n", topic);
-		}
-		catch (MqttException e) {
-			e.printStackTrace();
+			callbackByTopic.put(topic, callback);
+
+		} catch (MqttException e) {
+			String errmsg = String.format("(MQTTClient) subscribe error: %s", e.getMessage());
+			throw new ClearBladeException(errmsg, e);
 		}
 	}
 
-	private void resubscribe() {
-		for (String topic : this.subscribed) {
-			try {
-				this.mqttClient.subscribe(topic);
-				System.out.printf("re-subscribed to topic: %s%n", topic);
-			} catch (MqttException e) {
-				e.printStackTrace();
-			}
-		}
+	/**
+	 * Resubscribes to all the topics this client has subscribed to so far. Any errors are reported to the message
+	 * callback rather than throwing them.
+	 */
+	public void resubscribe() {
+	    callbackByTopic.forEach((topic, callback) -> {
+	       try {
+			   mqttClient.subscribe(topic);
+
+		   } catch (MqttException e) {
+	           String errmsg = String.format("(MQTTClient) resubscribe error: %s", e.getMessage());
+			   callback.error(new ClearBladeException(errmsg, e));
+		   }
+		});
 	}
 
-	public void unsubscribe(String topic) {
+	/**
+	 * Unsubscribes from the given topic.
+	 * @param topic topic to unsubscribe from
+	 * @throws ClearBladeException when unsubscribe fails
+	 */
+	public boolean unsubscribe(String topic) throws ClearBladeException {
 		try {
 			mqttClient.unsubscribe(topic);
-			subscribed.remove(topic);
-			System.out.printf("un-subscribed from topic: %s%n", topic);
-		}
-		catch (MqttException e) {
-			e.printStackTrace();
+			callbackByTopic.remove(topic);
+			return true;
+
+		} catch (MqttException e) {
+		    String errmsg = String.format("(MQTTClient) unsubscribe error: %s", e.getMessage());
+		    throw new ClearBladeException(errmsg, e);
 		}
 	}
 
-	public void connectionLost(Throwable arg0) {
-		String msg = String.format("%s. Reconnecting...", arg0.getMessage());
+	// MqttCallback overrides
+
+	@Override
+	public void connectComplete(boolean reconnected, String url) {
+
+		String msg = String.format("(MQTTClient) %s complete: %s", reconnected ? "reconnection" : "connection", url);
 		System.out.println(msg);
-		mqttClient = null;
-		this.connect();
-		this.resubscribe();
+
+		resubscribe();
+
+		if (this.onConnectionComplete != null) { this.onConnectionComplete.onConnectionComplete(reconnected, url); }
 	}
 
-	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		messageReceivedCallback.done(topic, new String(message.getPayload()));
+	@Override
+	public void connectionLost(Throwable arg0) {
+
+		String msg = String.format("(MQTTClient) connection lost: %s", arg0.getMessage());
+		System.out.println(msg);
+
+		if (this.onConnectionLost != null) { this.onConnectionLost.onConnectionLost(arg0); }
 	}
-	
+
+	@Override
+	public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+		MessageCallback callback = callbackByTopic.get(topic);
+
+		if (callback != null) {
+		    callback.done(topic, message.getPayload());
+		    callback.done(topic, new String(message.getPayload()));
+
+		} else {
+		    String errmsg = String.format("(MQTTClient) could not handle message for topic: %s", topic);
+		    System.out.println(errmsg);
+		}
+	}
+
+	@Override
 	public void deliveryComplete(IMqttDeliveryToken arg0) {
 	}
 

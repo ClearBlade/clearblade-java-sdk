@@ -28,7 +28,7 @@ public class UserAuthExample {
         return options;
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void initializeClearBlade() {
 
         String systemKey = System.getenv("SYSTEM_KEY");
         String systemSecret = System.getenv("SYSTEM_SECRET");
@@ -36,24 +36,35 @@ public class UserAuthExample {
         InitCallback initCb = new InitCallback() {
             @Override
             public void done(boolean results) {
-                System.out.print("done connecting.\n");
+                System.out.print("done initializing\n");
             }
 
             @Override
             public void error(ClearBladeException exception) {
-                System.err.printf("error connecting: %s\n", exception);
+                System.err.printf("error initializing: %s\n", exception);
                 exception.getCause().printStackTrace();
             }
         };
 
         InitOptions options = makeInitOptions();
         ClearBlade.initialize(systemKey, systemSecret, options, initCb);
+    }
+
+    public static void main(String[] args) throws ClearBladeException {
+
+        initializeClearBlade();
+
+        String identifier = "deviceClientID";
+        String topic = "userMessagingTopic";
+
+        MQTTClient mqttClient = new MQTTClient(identifier, 1);
 
         System.out.println("Publishing...");
-        MQTTClient mqttClient = new MQTTClient("UserClientID", 1);
+
         for (int idx = 0; idx < 100; idx++) {
-            mqttClient.publish("userMessagingTopic", String.format("userMessagingBody %s", idx));
+            mqttClient.publish(topic, String.format("userMessagingBody %s", idx));
         }
+
         mqttClient.disconnect();
     }
 }
