@@ -1,43 +1,54 @@
 package com.clearblade.java.api;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.annotations.Expose;
 
 public class QueryResponse {
 
-	//data pulled from server response
 	private int CURRENTPAGE;
 	private String NEXTPAGEURL;
 	private String PREVPAGEURL;
+
 	private int TOTAL;
 	private JsonArray DATA;
-	
-	//we will convert the JsonArray into an array of items 
+
+	@Expose(serialize = false, deserialize = false)
 	private Item[] dataItems;
 	
-	public QueryResponse() {
-		
+	public QueryResponse() {}
+
+	public static QueryResponse parseJson(String rawJson) {
+		Gson gson = new Gson();
+		return gson.fromJson(rawJson, QueryResponse.class);
 	}
 
 	public int getCurrentPage() {
 		return CURRENTPAGE;
 	}
+
 	public String getNextPageURL() {
 		return NEXTPAGEURL;
 	}
+
 	public String getPrevPageURL() {
 		return PREVPAGEURL;
 	}
+
 	public int getTotalCount() {
 		return TOTAL;
 	}
+
+	public JsonArray getData() {
+		return DATA;
+	}
+
 	public Item[] getDataItems() {
 		return dataItems;
 	}
+
 	public void setDataItems(Item[] items) {
 		dataItems = items;
 	}
-	public String getDataJsonAsString() {
-		return DATA.toString();
-	}
-	
+
 }

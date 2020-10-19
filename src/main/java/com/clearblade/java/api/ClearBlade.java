@@ -1,6 +1,7 @@
 package com.clearblade.java.api;
 
 import com.clearblade.java.api.auth.Auth;
+import com.clearblade.java.api.auth.AuthException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -230,9 +231,10 @@ public class ClearBlade {
 			Auth auth = options.getAuth();
 			auth.doAuth();
 			callback.done(true);
-		} catch (Exception e) {
-			String msg = String.format("authentication error: %s", e);
-			callback.error(new ClearBladeException(msg, e));
+
+		} catch (AuthException e) {
+			String errmsg = String.format("authentication error: %s", e.getMessage());
+			callback.error(new ClearBladeException(errmsg, e));
 		}
 	}
 

@@ -10,10 +10,7 @@ import java.util.Map;
 import com.clearblade.java.api.internal.PlatformResponse;
 import com.clearblade.java.api.internal.RequestEngine;
 import com.clearblade.java.api.internal.RequestProperties;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 
 /**
@@ -334,7 +331,7 @@ public class Query {
 //			@Override
 //			public void done(String response) {
 //				QueryResponse resp = new QueryResponse();
-//				resp.setDataItems(convertJsonArrayToItemArray(response));
+//				resp.setDataItems(parseItemArray(response));
 //				callback.done(resp);
 //			}
 //
@@ -351,8 +348,8 @@ public class Query {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to fetch failed:"+result.getData()));
 		} else {
-			QueryResponse resp = new QueryResponse();
-			resp.setDataItems(convertJsonArrayToItemArray((String)result.getData()));
+			QueryResponse resp = QueryResponse.parseJson((String) result.getData());
+			resp.setDataItems(parseItemArray(resp.getData().toString()));
 			callback.done(resp);
 		}
 	
@@ -366,7 +363,7 @@ public class Query {
 		if(resp.isError()) {
 			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
 		} else {
-			ret = convertJsonArrayToItemArray((String)resp.getData());
+			ret = parseItemArray((String) resp.getData());
 		}
 		return ret;
 	}
@@ -572,7 +569,7 @@ public class Query {
 //
 //			@Override
 //			public void done(String response) {
-//				Item[] ret = convertJsonArrayToItemArray(response);
+//				Item[] ret = parseItemArray(response);
 //				callback.done(ret);
 //			}
 //
@@ -590,10 +587,8 @@ public class Query {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to fetch failed:"+result.getData()));
 		} else {
-			
-			Item[] ret = convertJsonArrayToItemArray((String)result.getData());
+			Item[] ret = parseItemArray((String) result.getData());
 			callback.done(ret);
-			
 		}
 		
 		
@@ -606,7 +601,7 @@ public class Query {
 		if(resp.isError()) {
 			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
 		} else {
-			ret = convertJsonArrayToItemArray((String)resp.getData());
+			ret = parseItemArray((String) resp.getData());
 		}
 		return ret;
 	}
@@ -677,7 +672,7 @@ public class Query {
 //
 //			@Override
 //			public void done(String response) {
-//				Item[] ret = convertJsonArrayToItemArray(response);
+//				Item[] ret = parseItemArray(response);
 //				callback.done(ret);
 //			}
 //
@@ -694,7 +689,7 @@ public class Query {
 			Util.logger("Load", "" + result.getData(), true);
 			callback.error(new ClearBladeException("Call to remove failed:"+result.getData()));
 		} else {
-			Item[] ret = convertJsonArrayToItemArray((String)result.getData());
+			Item[] ret = parseItemArray((String) result.getData());
 			callback.done(ret);
 			
 		}
@@ -716,7 +711,7 @@ public class Query {
 		if(resp.isError()) {
 			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
 		} else {
-			ret = convertJsonArrayToItemArray((String)resp.getData());
+			ret = parseItemArray((String) resp.getData());
 		}
 		return ret;
 	}
@@ -768,44 +763,46 @@ public class Query {
 		public ArrayList<FieldValue> NEQ;
 		
 	}
-	
+
 	/**
-	 * Converts a JSON Array in String format to an Item Array.
-	 * @private
-	 * @param json A JSON Array in string format
-	 * @return Item[] An array of Items
-	 * @throws ClearBladeException will be thrown on error!
+	 * Similar to {@link #parseItemArrayWith(String, String, boolean)} but gets the collection ID and by name
+     * properties from the current instance.
+	 * @param rawJson raw Json string to parse
+	 * @return Item array
 	 */
-	private Item[] convertJsonArrayToItemArray(String json) {
-		// Parse the JSON string in to a JsonElement
-		JsonElement jsonElement = new JsonParser().parse(json);
-		// Store the JsonElement as a JsonArray
-		JsonArray array = jsonElement.getAsJsonArray();
-		ArrayList<Item> items = new ArrayList<Item>();// new Item[array.size()];
-		Iterator<JsonElement> iter = array.iterator();
-		while(iter.hasNext()){
-			
-			JsonElement val = iter.next();
-			if (val.isJsonObject()){
-				JsonObject temp = val.getAsJsonObject();
-				if (temp.entrySet().size()==0){
-					return (new Item[0]);
-				}else {
-					items.add(new Item(temp, getCollectionId(), byName));
-//					for (Entry<String, JsonElement> entry : temp.entrySet()) {
-//					    JsonObject elementTemp = entry.getValue().getAsJsonObject();//.getAsJsonArray("unterfeld");
-//					    
-//					    items.add(new Item(entry, getCollectionId()));
-//					    System.out.println("lets take a peak at the member");
-//					}
-				}
-			} 
-		}
-		
-		Item[] ret = new Item[items.size()];
-		ret = (Item[]) items.toArray(ret);
-		return ret;
+	private Item[] parseItemArray(String rawJson) {
+		return parseItemArrayWith(rawJson, getCollectionId(), byName);
 	}
-	
-	
+
+	/**
+	 * Parses the given string as an item array. Entries that are not objects or empty objects will be ignored.
+	 * @param rawJson raw Json string to parse
+	 * @return Item array
+	 */
+	protected static Item[] parseItemArrayWith(String rawJson, String collectionId, boolean byName) {
+		Gson gson = new Gson();
+
+		JsonElement[] arr = gson.fromJson(rawJson, JsonElement[].class);
+
+		ArrayList<Item> result = new ArrayList<>();
+
+		for (JsonElement elem : arr) {
+
+			if (!elem.isJsonObject()) {
+				continue;
+			}
+
+			JsonObject obj = elem.getAsJsonObject();
+
+			if (obj.size() <= 0) {
+			    continue;
+			}
+
+			result.add(new Item(obj, collectionId, byName));
+		}
+
+		Item[] ret = new Item[result.size()];
+		return result.toArray(ret);
+	}
+
 }
