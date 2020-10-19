@@ -325,9 +325,7 @@ public class Query {
 	 * @param callback - a DataCallback to be called upon success/failure of the query. 
 	 */
 	public void fetch(final DataCallback callback) {
-		fetchSetup();
 //		DataTask asyncFetch = new DataTask(new PlatformCallback(this, callback) {
-//
 //			@Override
 //			public void done(String response) {
 //				QueryResponse resp = new QueryResponse();
@@ -339,33 +337,34 @@ public class Query {
 //			public void error(ClearBladeException exception) {
 //				callback.error(exception);
 //			}
-//			
+//
 //		});
 //		asyncFetch.execute(request);
-		
-		PlatformResponse result= request.execute();
-		if(result.isError()) {
-			Util.logger("Load", "" + result.getData(), true);
-			callback.error(new ClearBladeException("Call to fetch failed:"+result.getData()));
-		} else {
-			QueryResponse resp = QueryResponse.parseJson((String) result.getData());
-			resp.setDataItems(parseItemArray(resp.getData().toString()));
-			callback.done(resp);
+
+        try {
+            Item[] items = fetchSync();
+            callback.done(items);
+
+		} catch (ClearBladeException e) {
+        	callback.error(e);
 		}
-	
 	}
 	
 	public Item[] fetchSync() throws ClearBladeException{
 
 		fetchSetup();
-		PlatformResponse resp = request.execute();
-		Item[] ret;
-		if(resp.isError()) {
-			throw new ClearBladeException("Call to fetch failed:"+resp.getData());
+
+		PlatformResponse<String> result = request.execute();
+
+		if(result.isError()) {
+			Util.logger("Load", result.getData(), true);
+			String errmsg = String.format("Call to fetch failed: %s", result.getData());
+			throw new ClearBladeException(errmsg);
+
 		} else {
-			ret = parseItemArray((String) resp.getData());
+			QueryResponse resp = QueryResponse.parseJson(result.getData());
+			return parseItemArray(resp.getData().toString());
 		}
-		return ret;
 	}
 	
 	private void fetchSetup(){
