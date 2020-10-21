@@ -8,12 +8,14 @@ import org.eclipse.paho.client.mqttv3.*;
 
 
 /**
- * MQTT client for using with the ClearBlade platform (subscription, publishing, auto-reconnect).
+ * MQTT client for using with the ClearBlade platform (subscription, publishing, auto-reconnect). Public final fields
+ * are kept public for backwards compatibility.
  */
 public class MqttClient implements MqttCallbackExtended {
 
-	private static int QUALITY_OF_SERVICE = 0;
-	private static boolean AUTO_RECONNECT = true;
+	static final int QUALITY_OF_SERVICE = 0;
+	static final boolean AUTO_RECONNECT = true;
+	static final MqttClientPersistence MQTT_CLIENT_PERSISTENCE = null;
 
     @FunctionalInterface
 	public interface OnConnectionComplete {
@@ -38,7 +40,7 @@ public class MqttClient implements MqttCallbackExtended {
 	/**
 	 * The system key of the system we are connecting to.
 	 */
-	private final String systemKey;
+	public final String systemKey;
 
 	/**
 	 * Unique identifier for this MQTT client.
@@ -48,7 +50,7 @@ public class MqttClient implements MqttCallbackExtended {
 	/**
 	 * Quality of service to use when no specified on the publish / subscribe methods.
 	 */
-	int defaultQualityOfService;
+	private int defaultQualityOfService;
 
 	/**
 	 * Auto-reconnect when connection is lost.
@@ -58,13 +60,18 @@ public class MqttClient implements MqttCallbackExtended {
 	/**
 	 * paho MqttClient instance.
 	 */
-	private org.eclipse.paho.client.mqttv3.MqttClient mqttClient;
+	protected org.eclipse.paho.client.mqttv3.MqttClient mqttClient;
 
 	/**
 	 * Contains the MessageCallback instances for each topic. This lets the user have different handling logic
 	 * depending on the topic.
 	 */
-	private Map<String, MessageCallback> callbackByTopic;
+	protected Map<String, MessageCallback> callbackByTopic;
+
+	/**
+	 * Contains the quality of service for each topic.
+	 */
+	protected Map<String, Integer> qosByTopic;
 
 	/**
 	 * Functional-interface callback for connection complete events.
@@ -98,6 +105,7 @@ public class MqttClient implements MqttCallbackExtended {
 	 * @param auth the authentication method to use
 	 * @param clientIdentifier the unique identifier for this client
 	 * @param qualityOfService the default quality of service to use
+	 * @param autoReconnect whenever the client should automatically connect / reconnect.
 	 */
 	public MqttClient(String url, Auth auth, String systemKey, String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
 
@@ -109,12 +117,21 @@ public class MqttClient implements MqttCallbackExtended {
 		this.autoReconnect = autoReconnect;
 		this.mqttClient = null;
 		this.callbackByTopic = new HashMap<>();
+		this.qosByTopic = new HashMap<>();
 		this.onConnectionComplete = null;
 		this.onConnectionLost = null;
 
 		if (autoReconnect) {
 			this.connect();
 		}
+	}
+
+	public int getQualityOfService() {
+		return defaultQualityOfService;
+	}
+
+	public void setQualityOfService(int qualityOfService) {
+		this.defaultQualityOfService = qualityOfService;
 	}
 
 	public boolean getAutoreconnect() {
@@ -140,35 +157,14 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 	/**
-	 * Tries to connect to the MQTT service specified by the supplied parameters during object constructions.
+	 * Tries to connect to the MQTT service specified by the supplied parameters during object construction.
 	 * @throws ClearBladeException if connection fails.
 	 */
 	public void connect() throws ClearBladeException {
-
-	    if (mqttClient != null && mqttClient.isConnected()) {
-	    	return;
+		if (mqttClient != null && mqttClient.isConnected()) {
+			return;
 		}
-
-		if (!auth.isAuthed()) {
-			throw new IllegalStateException("auth method not authenticated");
-		}
-
-		MqttConnectOptions options = new MqttConnectOptions();
-		options.setCleanSession(true);
-		options.setUserName(auth.getToken());
-		options.setPassword(systemKey.toCharArray());
-		options.setConnectionTimeout(5);
-		options.setAutomaticReconnect(autoReconnect);
-
-		try {
-			mqttClient = new org.eclipse.paho.client.mqttv3.MqttClient(url, clientIdentifier);
-			mqttClient.setCallback(this);
-			mqttClient.connect(options);
-
-		} catch (MqttException e) {
-			String errmsg = String.format("(MQTTClient) could not connect to %s: %s", url, e.getMessage());
-			throw new ClearBladeException(errmsg, e);
-		}
+		mqttClient = connectPaho();
 	}
 
 	/**
@@ -186,6 +182,7 @@ public class MqttClient implements MqttCallbackExtended {
 		try {
 			mqttClient.disconnect();
 			mqttClient = null;
+
 		} catch(MqttException e) {
 			String errmsg = String.format("(MQTTClient) disconnect error");
 			throw new ClearBladeException(errmsg, e);
@@ -243,6 +240,7 @@ public class MqttClient implements MqttCallbackExtended {
 		try {
 			mqttClient.subscribe(topic, qos);
 			callbackByTopic.put(topic, callback);
+			qosByTopic.put(topic, qos);
 
 		} catch (MqttException e) {
 			String errmsg = String.format("(MQTTClient) subscribe error: %s", e.getMessage());
@@ -256,12 +254,13 @@ public class MqttClient implements MqttCallbackExtended {
 	 */
 	public void resubscribe() {
 	    callbackByTopic.forEach((topic, callback) -> {
-	       try {
-			   mqttClient.subscribe(topic);
+	    	try {
+	    	    int qos = qosByTopic.get(topic);
+	    		mqttClient.subscribe(topic, qos);
 
-		   } catch (MqttException e) {
-	           String errmsg = String.format("(MQTTClient) resubscribe error: %s", e.getMessage());
-			   callback.error(new ClearBladeException(errmsg, e));
+	    	} catch (MqttException e) {
+	    		String errmsg = String.format("(MQTTClient) resubscribe error: %s", e.getMessage());
+	    		callback.error(new ClearBladeException(errmsg, e));
 		   }
 		});
 	}
@@ -275,6 +274,7 @@ public class MqttClient implements MqttCallbackExtended {
 		try {
 			mqttClient.unsubscribe(topic);
 			callbackByTopic.remove(topic);
+			qosByTopic.remove(topic);
 			return true;
 
 		} catch (MqttException e) {
@@ -306,7 +306,7 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 	@Override
-	public void messageArrived(String topic, MqttMessage message) throws Exception {
+	public void messageArrived(String topic, MqttMessage message) {
 
 		MessageCallback callback = callbackByTopic.get(topic);
 
@@ -324,5 +324,35 @@ public class MqttClient implements MqttCallbackExtended {
 	public void deliveryComplete(IMqttDeliveryToken arg0) {
 	}
 
+	// Misc
+
+	/**
+	 * package-protected (default when nothing is specified) method that returns a new Paho MqttClient based on
+	 * the current instance.
+	 */
+	org.eclipse.paho.client.mqttv3.MqttClient connectPaho() throws ClearBladeException {
+
+		if (!auth.isAuthed()) {
+			throw new IllegalStateException("auth method not authenticated");
+		}
+
+		MqttConnectOptions options = new MqttConnectOptions();
+		options.setCleanSession(true);
+		options.setUserName(auth.getToken());
+		options.setPassword(systemKey.toCharArray());
+		options.setConnectionTimeout(5);
+		options.setAutomaticReconnect(autoReconnect);
+
+		try {
+			org.eclipse.paho.client.mqttv3.MqttClient result = new org.eclipse.paho.client.mqttv3.MqttClient(url, clientIdentifier, MQTT_CLIENT_PERSISTENCE);
+			result.setCallback(this);
+			result.connect(options);
+			return result;
+
+		} catch (MqttException e) {
+			String errmsg = String.format("(MQTTClient) could not connect to %s: %s", url, e.getMessage());
+			throw new ClearBladeException(errmsg, e);
+		}
+	}
 }
 
