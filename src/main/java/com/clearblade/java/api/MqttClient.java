@@ -84,7 +84,7 @@ public class MqttClient implements MqttCallbackExtended {
 	private OnConnectionLost onConnectionLost;
 
 	/**
-	 * Creates a new MQTTClient instance using the given identifier. URL and auth method will be obtained from the
+	 * Creates a new MqttClient instance using the given identifier. URL and auth method will be obtained from the
 	 * global ClearBlade singleton.
 	 */
 	public MqttClient(String clientIdentifier) throws ClearBladeException {
@@ -92,7 +92,7 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 	/**
-	 * Creates a new MQTTClient instance using the given identifier and quality of service. URL and auth method will
+	 * Creates a new MqttClient instance using the given identifier and quality of service. URL and auth method will
 	 * be obtained from the global ClearBlade singleton.
 	 */
 	public MqttClient(String clientIdentifier, int qualityOfService) throws ClearBladeException {
@@ -100,7 +100,7 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 	/**
-	 * Creates a new MQTTClient instance using the given information.
+	 * Creates a new MqttClient instance using the given information.
 	 * @param url the messaging url to connect to
 	 * @param auth the authentication method to use
 	 * @param clientIdentifier the unique identifier for this client
@@ -184,7 +184,7 @@ public class MqttClient implements MqttCallbackExtended {
 			mqttClient = null;
 
 		} catch(MqttException e) {
-			String errmsg = String.format("(MQTTClient) disconnect error");
+			String errmsg = String.format("(MqttClient) disconnect error");
 			throw new ClearBladeException(errmsg, e);
 		}
 
@@ -209,12 +209,12 @@ public class MqttClient implements MqttCallbackExtended {
 	 * @throws ClearBladeException if publish fails
 	 */
 	public void publish(String topic, byte[] payload, int qos) throws ClearBladeException {
-		
+
 		try {
 			mqttClient.publish(topic, payload, qos, false);
 
 		} catch (MqttException e) {
-			String errmsg = String.format("(MQTTClient) publish error: %s", e.getMessage());
+			String errmsg = String.format("(MqttClient) publish error: %s", e.getMessage());
 			throw new ClearBladeException(errmsg, e);
 		}
 	}
@@ -243,7 +243,7 @@ public class MqttClient implements MqttCallbackExtended {
 			qosByTopic.put(topic, qos);
 
 		} catch (MqttException e) {
-			String errmsg = String.format("(MQTTClient) subscribe error: %s", e.getMessage());
+			String errmsg = String.format("(MqttClient) subscribe error: %s", e.getMessage());
 			throw new ClearBladeException(errmsg, e);
 		}
 	}
@@ -259,7 +259,7 @@ public class MqttClient implements MqttCallbackExtended {
 	    		mqttClient.subscribe(topic, qos);
 
 	    	} catch (MqttException e) {
-	    		String errmsg = String.format("(MQTTClient) resubscribe error: %s", e.getMessage());
+	    		String errmsg = String.format("(MqttClient) resubscribe error: %s", e.getMessage());
 	    		callback.error(new ClearBladeException(errmsg, e));
 		   }
 		});
@@ -278,7 +278,7 @@ public class MqttClient implements MqttCallbackExtended {
 			return true;
 
 		} catch (MqttException e) {
-		    String errmsg = String.format("(MQTTClient) unsubscribe error: %s", e.getMessage());
+		    String errmsg = String.format("(MqttClient) unsubscribe error: %s", e.getMessage());
 		    throw new ClearBladeException(errmsg, e);
 		}
 	}
@@ -288,7 +288,7 @@ public class MqttClient implements MqttCallbackExtended {
 	@Override
 	public void connectComplete(boolean reconnected, String url) {
 
-		String msg = String.format("(MQTTClient) %s complete: %s", reconnected ? "reconnection" : "connection", url);
+		String msg = String.format("(MqttClient) %s complete: %s", reconnected ? "reconnection" : "connection", url);
 		System.out.println(msg);
 
 		resubscribe();
@@ -299,7 +299,7 @@ public class MqttClient implements MqttCallbackExtended {
 	@Override
 	public void connectionLost(Throwable arg0) {
 
-		String msg = String.format("(MQTTClient) connection lost: %s", arg0.getMessage());
+		String msg = String.format("(MqttClient) connection lost: %s", arg0.getMessage());
 		System.out.println(msg);
 
 		if (this.onConnectionLost != null) { this.onConnectionLost.onConnectionLost(arg0); }
@@ -315,7 +315,7 @@ public class MqttClient implements MqttCallbackExtended {
 		    callback.done(topic, new String(message.getPayload()));
 
 		} else {
-		    String errmsg = String.format("(MQTTClient) could not handle message for topic: %s", topic);
+		    String errmsg = String.format("(MqttClient) could not handle message for topic: %s", topic);
 		    System.out.println(errmsg);
 		}
 	}
@@ -350,7 +350,7 @@ public class MqttClient implements MqttCallbackExtended {
 			return result;
 
 		} catch (MqttException e) {
-			String errmsg = String.format("(MQTTClient) could not connect to %s: %s", url, e.getMessage());
+			String errmsg = String.format("(MqttClient) could not connect to %s: %s", url, e.getMessage());
 			throw new ClearBladeException(errmsg, e);
 		}
 	}

@@ -21,7 +21,7 @@ Check [pom.xml](pom.xml) for reference.
 
 - [User auth example](src/main/java/com/clearblade/examples/UserAuthExample.java).
 - [Device auth example](src/main/java/com/clearblade/examples/DeviceAuthExample.java).
-- [Legacy example](src/main/java/com/clearblade/examples/MQTTClientJava.java).
+- [Legacy example](src/main/java/com/clearblade/examples/MqttClientJava.java).
 
 # API References
 
@@ -463,13 +463,13 @@ You will need to import the following packages for using the Messaging API:
 The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT Broker.
 ```java
 String clientID = “ClearBladeJavaTest”;
-MQTTClient mqttClient = new MQTTClient(clientID); // QoS = 0 Default
+MqttClient mqttClient = new MqttClient(clientID); // QoS = 0 Default
 ```
 OR
 ```java
 int qos = 1; // QoS can be 0,1 or 2
 String clientID = “ClearBladeJavaTest”;
-MQTTClient mqttClient = new MQTTClient(clientID, qos);
+MqttClient mqttClient = new MqttClient(clientID, qos);
 ```
 
 After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the ```Message``` object.
