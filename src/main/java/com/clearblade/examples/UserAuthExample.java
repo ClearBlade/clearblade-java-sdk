@@ -57,7 +57,7 @@ public class UserAuthExample {
         String identifier = "deviceClientID";
         String topic = "userMessagingTopic";
 
-        MQTTClient mqttClient = new MQTTClient(identifier, 1);
+        MqttClient mqttClient = new MqttClient(identifier, 1);
 
         System.out.println("Publishing...");
 

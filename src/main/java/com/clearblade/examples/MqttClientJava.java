@@ -4,9 +4,9 @@ import com.clearblade.java.api.*;
 
 import java.util.HashMap;
 
-public class MQTTClientJava {
+public class MqttClientJava {
 
-	private static MQTTClient mqttClient;
+	private static MqttClient mqttClient;
 	private static boolean isInit = false;
 
 	public static void main(String[] args) throws ClearBladeException{
@@ -82,7 +82,7 @@ public class MQTTClientJava {
 	}
 	
 	private static void connectToMQTT() throws ClearBladeException {
-		mqttClient = new MQTTClient("clientID-test", 1);
+		mqttClient = new MqttClient("clientID-test", 1);
 	}
 	
 	private static void subscribe(String topic) throws ClearBladeException {

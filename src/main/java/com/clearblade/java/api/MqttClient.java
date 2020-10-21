@@ -7,7 +7,7 @@ import com.clearblade.java.api.auth.Auth;
 import org.eclipse.paho.client.mqttv3.*;
 
 
-public class MQTTClient implements MqttCallbackExtended {
+public class MqttClient implements MqttCallbackExtended {
 
     @FunctionalInterface
 	public interface OnConnectionComplete {
@@ -52,7 +52,7 @@ public class MQTTClient implements MqttCallbackExtended {
 	/**
 	 * paho MqttClient instance.
 	 */
-	private MqttClient mqttClient;
+	private org.eclipse.paho.client.mqttv3.MqttClient mqttClient;
 
 	/**
 	 * Contains the MessageCallback instances for each topic. This lets the user have different handling logic
@@ -74,7 +74,7 @@ public class MQTTClient implements MqttCallbackExtended {
 	 * Creates a new MQTTClient instance using the given identifier. URL and auth method will be obtained from the
 	 * global ClearBlade singleton.
 	 */
-	public MQTTClient(String clientIdentifier) throws ClearBladeException {
+	public MqttClient(String clientIdentifier) throws ClearBladeException {
 		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, 0, true);
 	}
 
@@ -82,7 +82,7 @@ public class MQTTClient implements MqttCallbackExtended {
 	 * Creates a new MQTTClient instance using the given identifier and quality of service. URL and auth method will
 	 * be obtained from the global ClearBlade singleton.
 	 */
-	public MQTTClient(String clientIdentifier, int qualityOfService) throws ClearBladeException {
+	public MqttClient(String clientIdentifier, int qualityOfService) throws ClearBladeException {
 		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, true);
 	}
 
@@ -93,7 +93,7 @@ public class MQTTClient implements MqttCallbackExtended {
 	 * @param clientIdentifier the unique identifier for this client
 	 * @param qualityOfService the default quality of service to use
 	 */
-	public MQTTClient(String url, Auth auth, String systemKey, String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
+	public MqttClient(String url, Auth auth, String systemKey, String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
 
 		this.url = url;
 		this.auth = auth;
@@ -153,7 +153,7 @@ public class MQTTClient implements MqttCallbackExtended {
 		options.setAutomaticReconnect(autoReconnect);
 
 		try {
-			mqttClient = new MqttClient(url, clientIdentifier);
+			mqttClient = new org.eclipse.paho.client.mqttv3.MqttClient(url, clientIdentifier);
 			mqttClient.setCallback(this);
 			mqttClient.connect(options);
 

@@ -60,7 +60,7 @@ public class DeviceAuthExample {
         String firstTopic = "firstDeviceMessagingTopic";
         String secondTopic = "secondDeviceMessagingTopic";
 
-        MQTTClient mqttClient = new MQTTClient(identifier, 1);
+        MqttClient mqttClient = new MqttClient(identifier, 1);
 
         mqttClient.subscribe(firstTopic, new MessageCallback() {
             @Override

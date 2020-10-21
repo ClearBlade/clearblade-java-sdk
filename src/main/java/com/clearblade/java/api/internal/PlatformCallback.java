@@ -1,7 +1,7 @@
 package com.clearblade.java.api.internal;
 
 import com.clearblade.java.api.*;
-import com.clearblade.java.api.MQTTClient;
+import com.clearblade.java.api.MqttClient;
 
 public abstract class PlatformCallback {
 	public Collection _collection;
@@ -14,7 +14,7 @@ public abstract class PlatformCallback {
 	public Query _query;
 	public User _user;
 	public Code _code;
-	public MQTTClient _mqttClient;
+	public MqttClient _mqttClient;
 	public History _history;
 	
 	public PlatformCallback(Query query, DataCallback callback){
@@ -43,7 +43,7 @@ public abstract class PlatformCallback {
 		_codeCallback = callback;
 	}
 
-	public PlatformCallback(MQTTClient mqttClient, MessageCallback callback){
+	public PlatformCallback(MqttClient mqttClient, MessageCallback callback){
 		_mqttClient = mqttClient;
 		_messageCallback = callback;
 	}
