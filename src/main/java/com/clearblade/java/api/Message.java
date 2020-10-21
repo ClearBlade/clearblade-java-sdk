@@ -1,9 +1,8 @@
 package com.clearblade.java.api;
 
 /**
- * Message class is kept for backwards compatibility. It's currently being
- * replaced by {@link MqttClient}. It uses delegation on
- * the constructors since they are not automatically inherited.
+ * Message class is kept for backwards compatibility. Uses delegation on
+ * constructors since they are not inherited.
  *
  * @deprecated use {@link MqttClient} instead.
  */

@@ -7,7 +7,13 @@ import com.clearblade.java.api.auth.Auth;
 import org.eclipse.paho.client.mqttv3.*;
 
 
+/**
+ * MQTT client for using with the ClearBlade platform (subscription, publishing, auto-reconnect).
+ */
 public class MqttClient implements MqttCallbackExtended {
+
+	private static int QUALITY_OF_SERVICE = 0;
+	private static boolean AUTO_RECONNECT = true;
 
     @FunctionalInterface
 	public interface OnConnectionComplete {
@@ -75,7 +81,7 @@ public class MqttClient implements MqttCallbackExtended {
 	 * global ClearBlade singleton.
 	 */
 	public MqttClient(String clientIdentifier) throws ClearBladeException {
-		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, 0, true);
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, QUALITY_OF_SERVICE, AUTO_RECONNECT);
 	}
 
 	/**
@@ -83,7 +89,7 @@ public class MqttClient implements MqttCallbackExtended {
 	 * be obtained from the global ClearBlade singleton.
 	 */
 	public MqttClient(String clientIdentifier, int qualityOfService) throws ClearBladeException {
-		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, true);
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, AUTO_RECONNECT);
 	}
 
 	/**
@@ -106,7 +112,9 @@ public class MqttClient implements MqttCallbackExtended {
 		this.onConnectionComplete = null;
 		this.onConnectionLost = null;
 
-		this.connect();
+		if (autoReconnect) {
+			this.connect();
+		}
 	}
 
 	public boolean getAutoreconnect() {
@@ -317,3 +325,4 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 }
+
