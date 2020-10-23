@@ -1,11 +1,26 @@
 package com.clearblade.java.api;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 
 
 public class QueryTests {
+
+    @Test
+    void fetchCallsDoneWithResponseAndDoneWithItems() throws ClearBladeException {
+        Query spyQuery = spy(Query.class);
+        QueryResponse mockResponse = mock(QueryResponse.class);
+        DataCallback mockCallback = mock(DataCallback.class);
+
+        doReturn(mockResponse).when(spyQuery).doFetch();
+
+        spyQuery.fetch(mockCallback);
+
+        verify(mockCallback, times(1)).done(mockResponse);
+        verify(mockCallback, times(1)).done(mockResponse.getDataItems());
+    }
 
     @Test
     void parseItemArrayWithNoItemsReturnsEmptyArray() {

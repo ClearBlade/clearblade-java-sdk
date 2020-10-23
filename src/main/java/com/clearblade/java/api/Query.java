@@ -342,8 +342,9 @@ public class Query {
 //		asyncFetch.execute(request);
 
         try {
-            Item[] items = fetchSync();
-            callback.done(items);
+            QueryResponse resp = doFetch();
+            callback.done(resp);
+            callback.done(resp.getDataItems());
 
 		} catch (ClearBladeException e) {
         	callback.error(e);
@@ -351,6 +352,11 @@ public class Query {
 	}
 	
 	public Item[] fetchSync() throws ClearBladeException{
+		QueryResponse resp = doFetch();
+		return resp.getDataItems();
+	}
+	
+	protected QueryResponse doFetch() throws ClearBladeException {
 
 		fetchSetup();
 
@@ -363,18 +369,19 @@ public class Query {
 
 		} else {
 			QueryResponse resp = QueryResponse.parseJson(result.getData());
-			return parseItemArray(resp.getData().toString());
+			resp.setDataItems(parseItemArray(resp.getData().toString()));
+			return resp;
 		}
 	}
-	
-	private void fetchSetup(){
+
+	protected void fetchSetup(){
 		String queryParam = getFetchURLParameter();
 		RequestProperties headers;
 		headers = new RequestProperties.Builder().method("GET").endPoint(getEndPoint()+ queryParam).build();
 		//System.out.println(headers.getUri());
 		request.setHeaders(headers);
 	}
-	
+
 //	public Item[] fetch(){
 //		return null;
 //	}
