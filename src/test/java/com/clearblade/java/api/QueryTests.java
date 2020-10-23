@@ -62,4 +62,14 @@ public class QueryTests {
         assertEquals("bar", items[0].getString("foo"));
         assertEquals("baz", items[1].getString("bar"));
     }
+
+    @Test
+    void parseItemArrayWithEmptyStringFails() {
+        assertThrows(NullPointerException.class, () -> {
+            String rawJson = "";
+
+            Item[] items = Query.parseItemArrayWith(rawJson, "", false);
+        });
+    }
+
 }

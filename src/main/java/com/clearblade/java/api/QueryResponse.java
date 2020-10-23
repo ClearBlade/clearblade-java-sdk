@@ -16,7 +16,9 @@ public class QueryResponse {
 	@Expose(serialize = false, deserialize = false)
 	private Item[] dataItems;
 	
-	public QueryResponse() {}
+	public QueryResponse() {
+		this.dataItems = new Item[0];
+	}
 
 	public static QueryResponse parseJson(String rawJson) {
 		Gson gson = new Gson();
