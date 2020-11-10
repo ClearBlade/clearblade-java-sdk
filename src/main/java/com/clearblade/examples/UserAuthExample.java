@@ -62,7 +62,7 @@ public class UserAuthExample {
         System.out.println("Publishing...");
 
         for (int idx = 0; idx < 100; idx++) {
-            mqttClient.publish(topic, String.format("userMessagingBody %s", idx));
+            mqttClient.publish(topic, String.format("userMessagingBody %s", "message:" + idx), true);
         }
 
         mqttClient.disconnect();

@@ -17,7 +17,7 @@ public class MqttClient implements MqttCallbackExtended {
 	static final boolean AUTO_RECONNECT = true;
 	static final MqttClientPersistence MQTT_CLIENT_PERSISTENCE = null;
 
-    @FunctionalInterface
+	@FunctionalInterface
 	public interface OnConnectionComplete {
 		void onConnectionComplete(boolean reconnected, String url);
 	}
@@ -198,7 +198,7 @@ public class MqttClient implements MqttCallbackExtended {
 	 * @throws ClearBladeException if publish fails
 	 */
 	public void publish(String topic, String message) throws ClearBladeException {
-		publish(topic, message.getBytes(), defaultQualityOfService);
+		publish(topic, message.getBytes(), defaultQualityOfService, false);
 	}
 
 	/**
@@ -208,15 +208,26 @@ public class MqttClient implements MqttCallbackExtended {
 	 * @param qos quality of service
 	 * @throws ClearBladeException if publish fails
 	 */
-	public void publish(String topic, byte[] payload, int qos) throws ClearBladeException {
+	public void publish(String topic, byte[] payload, int qos, boolean retained) throws ClearBladeException {
 
 		try {
-			mqttClient.publish(topic, payload, qos, false);
+			mqttClient.publish(topic, payload, qos, retained);
 
 		} catch (MqttException e) {
 			String errmsg = String.format("(MqttClient) publish error: %s", e.getMessage());
 			throw new ClearBladeException(errmsg, e);
 		}
+	}
+
+	/**
+	 * Publishes the given message to the given topic.
+	 * @param topic topic to publish to
+	 * @param message message to publish
+	 * @param retained flag to set whether topic message is retained
+	 * @throws ClearBladeException if publish fails
+	 */
+	public void publish(String topic, String message, boolean retained) throws ClearBladeException {
+		publish(topic, message.getBytes(), defaultQualityOfService, retained);
 	}
 
 	/**
