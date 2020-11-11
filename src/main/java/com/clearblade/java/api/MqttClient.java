@@ -202,10 +202,22 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 	/**
+	 * Publishes the given message to the given topic.
+	 * @param topic topic to publish to
+	 * @param message message to publish
+	 * @param retained flag to set whether topic message is retained
+	 * @throws ClearBladeException if publish fails
+	 */
+	public void publish(String topic, String message, boolean retained) throws ClearBladeException {
+		publish(topic, message.getBytes(), defaultQualityOfService, retained);
+	}
+
+	/**
 	 * Publishes the given message (bytes) to the given topic, using the given quality of service.
 	 * @param topic topic to publish to
 	 * @param payload message to publish
 	 * @param qos quality of service
+	 * @param retained flag to set whether topic message is retained
 	 * @throws ClearBladeException if publish fails
 	 */
 	public void publish(String topic, byte[] payload, int qos, boolean retained) throws ClearBladeException {
@@ -217,17 +229,6 @@ public class MqttClient implements MqttCallbackExtended {
 			String errmsg = String.format("(MqttClient) publish error: %s", e.getMessage());
 			throw new ClearBladeException(errmsg, e);
 		}
-	}
-
-	/**
-	 * Publishes the given message to the given topic.
-	 * @param topic topic to publish to
-	 * @param message message to publish
-	 * @param retained flag to set whether topic message is retained
-	 * @throws ClearBladeException if publish fails
-	 */
-	public void publish(String topic, String message, boolean retained) throws ClearBladeException {
-		publish(topic, message.getBytes(), defaultQualityOfService, retained);
 	}
 
 	/**
