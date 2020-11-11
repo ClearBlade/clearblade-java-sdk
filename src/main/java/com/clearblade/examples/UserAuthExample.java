@@ -3,6 +3,8 @@ package com.clearblade.examples;
 import com.clearblade.java.api.*;
 import com.clearblade.java.api.auth.UserAuth;
 
+import java.util.concurrent.TimeUnit;
+
 public class UserAuthExample {
 
     public static InitOptions makeInitOptions() {
@@ -50,7 +52,7 @@ public class UserAuthExample {
         ClearBlade.initialize(systemKey, systemSecret, options, initCb);
     }
 
-    public static void main(String[] args) throws ClearBladeException {
+    public static void main(String[] args) throws ClearBladeException, InterruptedException {
 
         initializeClearBlade();
 
@@ -62,9 +64,20 @@ public class UserAuthExample {
         System.out.println("Publishing...");
 
         for (int idx = 0; idx < 100; idx++) {
-            mqttClient.publish(topic, String.format("userMessagingBody %s", idx));
-        }
+            // The next line shows one way to publish with the retained flag set to false
+            // mqttClient.publish(topic, String.format("userMessagingBody %s", "message:" + idx));
 
+            // The next line shows a second way to publish with the retained flag set to false
+            // mqttClient.publish(topic, String.format("userMessagingBody %s", "message:" + idx), false);
+
+            // The next line shows how to publish with the retained flag set to true
+            mqttClient.publish(topic, String.format("userMessagingBody %s", "message:" + idx), true);
+        };
+
+        // The next line shows how to delete a retained message for the topic
+        // mqttClient.publish(topic, "", true);
+
+        TimeUnit.SECONDS.sleep(3);
         mqttClient.disconnect();
     }
 }
