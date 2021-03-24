@@ -1,7 +1,8 @@
 package com.clearblade.java.api;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.clearblade.java.api.auth.Auth;
 import org.eclipse.paho.client.mqttv3.*;
@@ -321,11 +322,44 @@ public class MqttClient implements MqttCallbackExtended {
 	public void messageArrived(String topic, MqttMessage message) {
 
 		MessageCallback callback = callbackByTopic.get(topic);
-
 		if (callback != null) {
-		    callback.done(topic, message.getPayload());
-		    callback.done(topic, new String(message.getPayload()));
+			callback.done(topic, message.getPayload());
+			callback.done(topic, new String(message.getPayload()));
+		} else if (callbackByTopic.size() > 0) { //Check for wildcards
 
+			Set<String> keys = callbackByTopic.keySet();
+			List<String> newKeys = new ArrayList<>();
+			keys.forEach(key -> {//replace mqtt wildcards with regex wildcards
+				String[] splitKey = key.split("/");
+				splitKey = Arrays.stream(splitKey)
+						.map(s -> s.replace("+", ".*"))
+						.map(s -> s.replace("#", ".*"))
+						.toArray(String[]::new);
+				StringBuilder newKey = new StringBuilder();
+				for (String k:splitKey) {
+					if (newKey.length() != 0)
+					{
+						newKey.append("/");//add the slashes back in
+					}
+					newKey.append(k);
+				}
+				newKeys.add(newKey.toString());
+
+			});
+			List<String> allMatches = new ArrayList<>();
+ 			newKeys.forEach(key -> {
+				Pattern pattern = Pattern.compile(key);
+
+				List<String> matching = keys.stream()
+						.filter(pattern.asPredicate())
+						.collect(Collectors.toList());//check key set against keys with regex
+				allMatches.addAll(matching);
+			});
+			if (allMatches.size() == 1) {//if there's more than one match, there's a problem
+				callback = callbackByTopic.get(allMatches.get(0));
+				callback.done(topic, message.getPayload());
+				callback.done(topic, new String(message.getPayload()));
+			}
 		} else {
 		    String errmsg = String.format("(MqttClient) could not handle message for topic: %s", topic);
 		    System.out.println(errmsg);
