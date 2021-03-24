@@ -329,23 +329,11 @@ public class MqttClient implements MqttCallbackExtended {
 
 			Set<String> keys = callbackByTopic.keySet();
 			List<String> newKeys = new ArrayList<>();
-			keys.forEach(key -> {//replace mqtt wildcards with regex wildcards
-				String[] splitKey = key.split("/");
-				splitKey = Arrays.stream(splitKey)
-						.map(s -> s.replace("+", ".*"))
-						.map(s -> s.replace("#", ".*"))
-						.toArray(String[]::new);
-				StringBuilder newKey = new StringBuilder();
-				for (String k:splitKey) {
-					if (newKey.length() != 0)
-					{
-						newKey.append("/");//add the slashes back in
-					}
-					newKey.append(k);
-				}
-				newKeys.add(newKey.toString());
-
+			keys.forEach(key -> {
+				String newKey = key.replace("+", ".*").replace("#", ".*");//replace mqtt wildcards with regex
+				newKeys.add(newKey);
 			});
+			
 			List<String> allMatches = new ArrayList<>();
  			newKeys.forEach(key -> {
 				Pattern pattern = Pattern.compile(key);
