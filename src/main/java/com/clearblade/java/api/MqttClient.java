@@ -321,10 +321,13 @@ public class MqttClient implements MqttCallbackExtended {
 	@Override
 	public void messageArrived(String topic, MqttMessage message) {
 
+		byte[] payload = message.getPayload();
+
 		MessageCallback callback = callbackByTopic.get(topic);
+
 		if (callback != null) {
-			callback.done(topic, message.getPayload());
-			callback.done(topic, new String(message.getPayload()));
+			callback.done(topic, payload);
+			callback.done(topic, new String(payload));
 		} else if (callbackByTopic.size() > 0) { //Check for wildcards
 
 			Set<String> keys = callbackByTopic.keySet();
@@ -333,7 +336,7 @@ public class MqttClient implements MqttCallbackExtended {
 				String newKey = key.replace("+", ".*").replace("#", ".*");//replace mqtt wildcards with regex
 				newKeys.add(newKey);
 			});
-			
+
 			List<String> allMatches = new ArrayList<>();
  			newKeys.forEach(key -> {
 				Pattern pattern = Pattern.compile(key);
@@ -345,8 +348,8 @@ public class MqttClient implements MqttCallbackExtended {
 			});
 			if (allMatches.size() == 1) {//if there's more than one match, there's a problem
 				callback = callbackByTopic.get(allMatches.get(0));
-				callback.done(topic, message.getPayload());
-				callback.done(topic, new String(message.getPayload()));
+				callback.done(topic, payload);
+				callback.done(topic, new String(payload));
 			}
 		} else {
 		    String errmsg = String.format("(MqttClient) could not handle message for topic: %s", topic);
