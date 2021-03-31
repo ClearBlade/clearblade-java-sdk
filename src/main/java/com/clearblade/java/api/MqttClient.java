@@ -1,6 +1,7 @@
 package com.clearblade.java.api;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -333,15 +334,17 @@ public class MqttClient implements MqttCallbackExtended {
 				String newKey = key.replace("+", ".*").replace("#", ".*");//replace mqtt wildcards with regex
 				newKeys.add(newKey);
 			});
-			
+
 			List<String> allMatches = new ArrayList<>();
  			newKeys.forEach(key -> {
 				Pattern pattern = Pattern.compile(key);
 
-				List<String> matching = keys.stream()
-						.filter(pattern.asPredicate())
-						.collect(Collectors.toList());//check key set against keys with regex
-				allMatches.addAll(matching);
+				if (topic.matches(key)) {
+					List<String> matching = keys.stream()
+							.filter(pattern.asPredicate())
+							.collect(Collectors.toList());//check key set against keys with regex
+					allMatches.addAll(matching);
+				}
 			});
 			if (allMatches.size() == 1) {//if there's more than one match, there's a problem
 				callback = callbackByTopic.get(allMatches.get(0));
