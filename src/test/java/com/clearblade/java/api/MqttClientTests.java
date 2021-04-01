@@ -152,32 +152,38 @@ public class MqttClientTests {
     }
 
     @Test
-    void messageArrivedOnSubscribedWildcardTopicUsesCallback() throws Exception {
+    void messageArrivedOnWildcardLevelOnlyUsesLevelCallback() throws Exception {
         MessageCallback mockCallback = mock(MessageCallback.class);
 
         spyClient.subscribe("topic-0", 0, mockCallback);
         spyClient.subscribe("level/+/topic", 0, mockCallback);
-        spyClient.subscribe("multi/#", 0, mockCallback);
 
-        MqttMessage mockMessageOne = mock(MqttMessage.class);
-        MqttMessage mockMessageTwo = mock(MqttMessage.class);
-        MqttMessage mockMessageThree = mock(MqttMessage.class);
+        MqttMessage mockMessage = mock(MqttMessage.class);
 
-        when(mockMessageOne.getPayload()).thenReturn("foo".getBytes());
-        when(mockMessageTwo.getPayload()).thenReturn("bar".getBytes());
-        when(mockMessageThree.getPayload()).thenReturn("baz".getBytes());
+        when(mockMessage.getPayload()).thenReturn("bar".getBytes());
 
-        spyClient.messageArrived("topic-0", mockMessageOne);
-        spyClient.messageArrived("level/foo/topic", mockMessageTwo);
-        spyClient.messageArrived("multi/foo/topic", mockMessageThree);
-
-        verify(mockCallback, times(1)).done("topic-0", "foo".getBytes());
-        verify(mockCallback, times(1)).done("topic-0", "foo");
-
+        spyClient.messageArrived("level/foo/topic", mockMessage);
+        verify(mockCallback, times(0)).done("topic-0", "bar".getBytes());
+        verify(mockCallback, times(0)).done("topic-0", "bar");
         verify(mockCallback, times(1)).done("level/foo/topic", "bar".getBytes());
         verify(mockCallback, times(1)).done("level/foo/topic", "bar");
+    }
 
-        verify(mockCallback, times(1)).done("multi/foo/topic", "baz".getBytes());
-        verify(mockCallback, times(1)).done("multi/foo/topic", "baz");
+    @Test
+    void messageArrivedOnWildcardMultiLevelOnlyUsesMultiLevelCallback() throws Exception {
+        MessageCallback mockCallback = mock(MessageCallback.class);
+
+        spyClient.subscribe("topic-0", 0, mockCallback);
+        spyClient.subscribe("multi/#", 0, mockCallback);
+
+        MqttMessage mockMessage = mock(MqttMessage.class);
+
+        when(mockMessage.getPayload()).thenReturn("bar".getBytes());
+
+        spyClient.messageArrived("multi/foo/topic", mockMessage);
+        verify(mockCallback, times(0)).done("topic-0", "bar".getBytes());
+        verify(mockCallback, times(0)).done("topic-0", "bar");
+        verify(mockCallback, times(1)).done("multi/foo/topic", "bar".getBytes());
+        verify(mockCallback, times(1)).done("multi/foo/topic", "bar");
     }
 }
