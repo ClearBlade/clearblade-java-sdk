@@ -140,12 +140,13 @@ The ClearBlade Java API allows executing a Code Service on the platform from you
 **Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Code API.**
 
 You need to import the following packages to use the Code API:
-```import com.clearblade.java.api.Code;```
-```import com.clearblade.java.api.CodeCallback;```
+`import com.clearblade.java.api.Code;`
+`import com.clearblade.java.api.CodeCallback;`
 
 #### Code Service Without Parameters
 
 A code service which does not take any parameters can be executed as follows:
+
 ```java
 String serviceName = "yourServiceName";
 
@@ -169,7 +170,8 @@ codeService.executeWithoutParams(codeCallback);
 
 #### Code Service With Parameters
 
-A Json Object of parameters needs to be passes to the ```Code``` class constructor along with the service name:
+A Json Object of parameters needs to be passes to the `Code` class constructor along with the service name:
+
 ```java
 String serviceName = "yourServiceName";
 String parameters = "{\"param1\":\"value1\"}";
@@ -192,18 +194,16 @@ CodeCallback codeCallback = new CodeCallback() {
 Code codeService = new Code(serviceName, parameterJsonObject);
 codeService.executeWithParams(codeCallback);
 ```
+
 ## Data
 
-With the ClearBlade Java API, a developer can use the ```Query, Item``` and ```Collection``` objects to manipulate data on the ClearBlade platform.
-Import the following packages:
--```import com.clearblade.java.api.Collection;```
--```import com.clearblade.java.api.Query;```
--```import com.clearblade.java.api.Item;```
--```import com.clearblade.java.api.DataCallback;```
+With the ClearBlade Java API, a developer can use the `Query, Item` and `Collection` objects to manipulate data on the ClearBlade platform.
+Import the following packages: -`import com.clearblade.java.api.Collection;` -`import com.clearblade.java.api.Query;` -`import com.clearblade.java.api.Item;` -`import com.clearblade.java.api.DataCallback;`
 
 ## Query
 
-Create a new ```Query``` object:
+Create a new `Query` object:
+
 ```java
 String collectionID = "yourCollectionID";
 Query query = new Query(collectionID);
@@ -335,12 +335,13 @@ Query query = new Query(collectionID);
 	 	});
 ```
 
-The page size and page number of the results to be returned can be set by using ```query.setPageSize(int pageSize)``` and ```query.setPageNum(int pageNum)```.
+The page size and page number of the results to be returned can be set by using `query.setPageSize(int pageSize)` and `query.setPageNum(int pageNum)`.
 
 ## Collections
 
-The ```Collection``` class contains functions to **fetch (GET)**, **update (PUT)**, **create (POST)** and **remove (DELETE)** a collection using the REST API.
+The `Collection` class contains functions to **fetch (GET)**, **update (PUT)**, **create (POST)** and **remove (DELETE)** a collection using the REST API.
 A collection object needs to be created first:
+
 ```java
 String collectionID = "yourCollectionID";
 Collection collection = new Collection(collectionID);
@@ -455,28 +456,54 @@ The Messaging API is used initialize, connect and communicate with the ClearBlad
 **Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Messaging API. This is important because the ClearBlade MQTT Broker requires the authentication token to establish a successful connection. This authentication token can only be obtained by initializing and authenticaing with the ClearBlade platform**
 
 You will need to import the following packages for using the Messaging API:
-```import com.clearblade.java.api.MqttClient;```
-```import com.clearblade.java.api.MessageCallback;```
+`import com.clearblade.java.api.MqttClient;`
+`import com.clearblade.java.api.MessageCallback;`
 
 ### Initialize and Connect
 
-The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT Broker.
+The first step is to create a new `Message` object by passing the client ID and messaging QoS (optional). The `Message` constructor will then initialize and connect with the MQTT Broker.
+
 ```java
 String clientID = “ClearBladeJavaTest”;
-MqttClient mqttClient = new MqttClient(clientID); // QoS = 0 Default
+MqttClient mqttClient = new MqttClient(clientID);
+// QoS = 0 Default; autoReconnect = true Default; maxInflight = 10 Default
 ```
+
 OR
+
 ```java
 int qos = 1; // QoS can be 0,1 or 2
 String clientID = “ClearBladeJavaTest”;
 MqttClient mqttClient = new MqttClient(clientID, qos);
+// autoReconnect = true Default; maxInflight = 10 Default
 ```
 
-After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the ```Message``` object.
+OR
+
+```java
+int qos = 1; // QoS can be 0,1 or 2
+String clientID = “ClearBladeJavaTest”;
+boolean autoReconnect = false;
+MqttClient mqttClient = new MqttClient(clientID, qos, autoReconnect);
+// maxInflight = 10 Default
+```
+
+OR
+
+```java
+int qos = 1; // QoS can be 0,1 or 2
+String clientID = “ClearBladeJavaTest”;
+boolean autoReconnect = false;
+int maxInflight = 100;
+MqttClient mqttClient = new MqttClient(clientID, qos, autoReconnect, maxInflight);
+```
+
+After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the `Message` object.
 
 ### Publish
 
-The publish function takes a topic and message of type ```String``` and publishes to the MQTT Broker.
+The publish function takes a topic and message of type `String` and publishes to the MQTT Broker.
+
 ```java
 String topic = "yourTopic";
 String message = "yourMessage";
@@ -485,7 +512,8 @@ mqttClient.publish(topic, message);
 
 ### Subscribe
 
-The subscribe function takes a topic of type ```String``` and a callback to handle the arrived messages.
+The subscribe function takes a topic of type `String` and a callback to handle the arrived messages.
+
 ```java
 String topic = "topicToSubscribe";
 MessageCallback messageCallback = new MessageCallback() {
@@ -499,7 +527,8 @@ mqttClient.subscribe(topic, messageCallback);
 
 ### Unsubscribe
 
-The unsubscribe function takes a topic of type ```String``.
+The unsubscribe function takes a topic of type ``String`.
+
 ```java
 String topic = "topicToUnsubscribe";
 mqttClient.unsubscribe(topic);
@@ -508,6 +537,7 @@ mqttClient.unsubscribe(topic);
 ### Disconnect
 
 The disconnect function is used to disconnect from the MQTT Broker. **Note that this does not disconnect the user from the ClearBlade platform. User logout needs to be called separately.**
+
 ```java
 mqttClient.disconnect();
 ```
@@ -515,4 +545,3 @@ mqttClient.disconnect();
 # JavaDoc
 
 The Javadoc for the Java API can be found [here](https://docs.clearblade.com/v/3/static/javaapi/index.html).
-
