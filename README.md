@@ -48,7 +48,6 @@ There are two ways to initialize the SDK:
 ```java
 String SYSTEM_KEY = "your_systemkey";
 String SYSTEM_SECRET = "your_systemsecret";
-
 InitCallback initCallback = new InitCallback(){
     @Override
     public void done(boolean results){
@@ -60,7 +59,6 @@ InitCallback initCallback = new InitCallback(){
         Log.i("Failed init", "holy cow!!" + exception.getLocalizedMessage());
     }
 };
-
 clearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initCallback);
 ```
 
@@ -70,24 +68,17 @@ Use the `com.clearblade.java.api.InitOptions` class to construct your options ob
 
 ```java
 import com.clearblade.java.api.InitOptions;
-
 InitOptions initOptions = new InitOptions()
-
     // URL of the platform to use (default: https://platform.clearblade.com)
     .setPlatformUrl(String)
-
     // URL of the messaging backend to use (default: tcp://messaging.clearblade.com:1883)
     .setMessagingUrl(String)
-
     // Authorization method to use (default: com.clearblade.java.api.auth.AnonAuth)
     .setAuth(com.clearblade.java.api.auth.Auth)
-
     // Enable internal ClearBlade JDK logging (default: false)
     .setEnableLogging(Boolean)
-
     // Timeout in milliseconds for API calls (default: 30000)
     .setCallTimeout(Integer)
-
     // Allow connecting to a platform server without a signed SSL certificate
     .setAllowUntrusted(Boolean);
 ```
@@ -97,7 +88,6 @@ After configuring your options object, you can use it in your initialize call:
 ```java
 String SYSTEM_KEY = "your_systemkey";
 String SYSTEM_SECRET = "your_systemsecret";
-
 InitCallback initCallback = new InitCallback(){
     @Override
     public void done(boolean results){
@@ -108,7 +98,6 @@ InitCallback initCallback = new InitCallback(){
 	// initialization failed
     }
 };
-
 ClearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initOptions, initCallback);
 ```
 
@@ -124,93 +113,71 @@ Here's a small snippet that authenticates to the platform using user authenticat
 import com.clearblade.java.api.ClearBlade;
 import com.clearblade.java.api.InitOptions;
 import com.clearblade.java.api.auth.UserAuth;
-
 InitOptions initOptions = new InitOptions()
     .setAuth(new UserAuth("YOUR EMAIL", "YOUR PASSWORD");
-
 ClearBlade.initialize("YOUR SYSTEM KEY", "YOUR SYSTEM SECRET", initOptions, ...);
 ```
-
 Check the `com.clearblade.java.api.auth` package for more authentication methods.
-
 ## Code
-
 The ClearBlade Java API allows executing a Code Service on the platform from your Java application.
-
 **Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Code API.**
-
 You need to import the following packages to use the Code API:
 ```import com.clearblade.java.api.Code;```
 ```import com.clearblade.java.api.CodeCallback;```
-
 #### Code Service Without Parameters
-
 A code service which does not take any parameters can be executed as follows:
 ```java
 String serviceName = "yourServiceName";
-
 CodeCallback codeCallback = new CodeCallback() {
 	@Override
 	public void done(JsonObject response) {
 	    // Code Service executed successfully
 		Log.i("codeResponse", response.toString());
 	}
-
 	@Override
 	public void error(ClearBladeException exception) {
 	    // Code Service execution failed
 		Log.i("codeResponse", exception.getMessage());
 	}
 };
-
 Code codeService = new Code(serviceName);
 codeService.executeWithoutParams(codeCallback);
 ```
-
 #### Code Service With Parameters
-
 A Json Object of parameters needs to be passes to the ```Code``` class constructor along with the service name:
 ```java
 String serviceName = "yourServiceName";
 String parameters = "{\"param1\":\"value1\"}";
 JsonObject parameterJsonObject = new JsonParser().parse(parameters).getAsJsonObject();
-
 CodeCallback codeCallback = new CodeCallback() {
 	@Override
 	public void done(JsonObject response) {
 	    // Code Service executed successfully
 		Log.i("codeResponse", response.toString());
 	}
-
 	@Override
 	public void error(ClearBladeException exception) {
 	    // Code Service execution failed
 		Log.i("codeResponse", exception.getMessage());
 	}
 };
-
 Code codeService = new Code(serviceName, parameterJsonObject);
 codeService.executeWithParams(codeCallback);
 ```
 ## Data
-
 With the ClearBlade Java API, a developer can use the ```Query, Item``` and ```Collection``` objects to manipulate data on the ClearBlade platform.
 Import the following packages:
 -```import com.clearblade.java.api.Collection;```
 -```import com.clearblade.java.api.Query;```
 -```import com.clearblade.java.api.Item;```
 -```import com.clearblade.java.api.DataCallback;```
-
 ## Query
-
 Create a new ```Query``` object:
 ```java
 String collectionID = "yourCollectionID";
 Query query = new Query(collectionID);
 ```
-
 #### query.EqualTo(String field, Object value)
-
 ```java
 /**
 	 * Creates an equality clause in the query object
@@ -321,7 +288,6 @@ Query query = new Query(collectionID);
 
 ```java
 	 /* Removes on all items matching the query criteria within a Collection */
-
 	 	query.equalTo("name", "John");
 	 	query.remove( new DataCallback() {
 	 		@Override
@@ -457,9 +423,7 @@ The Messaging API is used initialize, connect and communicate with the ClearBlad
 You will need to import the following packages for using the Messaging API:
 ```import com.clearblade.java.api.MqttClient;```
 ```import com.clearblade.java.api.MessageCallback;```
-
 ### Initialize and Connect
-
 The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT Broker.
 ```java
 String clientID = “ClearBladeJavaTest”;
@@ -470,6 +434,22 @@ OR
 int qos = 1; // QoS can be 0,1 or 2
 String clientID = “ClearBladeJavaTest”;
 MqttClient mqttClient = new MqttClient(clientID, qos);
+```
+OR
+```java
+int qos = 1; // QoS can be 0,1 or 2
+String clientID = “ClearBladeJavaTest”;
+boolean autoReconnect = false;
+MqttClient mqttClient = new MqttClient(clientID, qos, autoReconnect);
+// maxInflight = 10 Default
+```
+OR
+```java
+int qos = 1; // QoS can be 0,1 or 2
+String clientID = “ClearBladeJavaTest”;
+boolean autoReconnect = false;
+int maxInflight = 100;
+MqttClient mqttClient = new MqttClient(clientID, qos, autoReconnect, maxInflight);
 ```
 
 After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the ```Message``` object.
@@ -504,9 +484,7 @@ The unsubscribe function takes a topic of type ```String``.
 String topic = "topicToUnsubscribe";
 mqttClient.unsubscribe(topic);
 ```
-
 ### Disconnect
-
 The disconnect function is used to disconnect from the MQTT Broker. **Note that this does not disconnect the user from the ClearBlade platform. User logout needs to be called separately.**
 ```java
 mqttClient.disconnect();
@@ -515,4 +493,3 @@ mqttClient.disconnect();
 # JavaDoc
 
 The Javadoc for the Java API can be found [here](https://docs.clearblade.com/v/3/static/javaapi/index.html).
-

@@ -17,6 +17,7 @@ public class MqttClient implements MqttCallbackExtended {
 
 	static final int QUALITY_OF_SERVICE = 0;
 	static final boolean AUTO_RECONNECT = true;
+	static final int MAX_INFLIGHT = 10;
 	static final MqttClientPersistence MQTT_CLIENT_PERSISTENCE = null;
 
 	@FunctionalInterface
@@ -55,6 +56,11 @@ public class MqttClient implements MqttCallbackExtended {
 	private int defaultQualityOfService;
 
 	/**
+	 * Max inflight to use when not specified.
+	 */
+	private int maxInflight;
+
+	/**
 	 * Auto-reconnect when connection is lost.
 	 */
 	private boolean autoReconnect;
@@ -90,7 +96,7 @@ public class MqttClient implements MqttCallbackExtended {
 	 * global ClearBlade singleton.
 	 */
 	public MqttClient(String clientIdentifier) throws ClearBladeException {
-		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, QUALITY_OF_SERVICE, AUTO_RECONNECT);
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, QUALITY_OF_SERVICE, AUTO_RECONNECT, MAX_INFLIGHT);
 	}
 
 	/**
@@ -98,7 +104,23 @@ public class MqttClient implements MqttCallbackExtended {
 	 * be obtained from the global ClearBlade singleton.
 	 */
 	public MqttClient(String clientIdentifier, int qualityOfService) throws ClearBladeException {
-		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, AUTO_RECONNECT);
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, AUTO_RECONNECT, MAX_INFLIGHT);
+	}
+
+	/**
+	 * Creates a new MqttClient instance using the given identifier, quality of service and autoReconnect. URL and auth method will
+	 * be obtained from the global ClearBlade singleton.
+	 */
+	public MqttClient(String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, autoReconnect, MAX_INFLIGHT);
+	}
+
+	/**
+	 * Creates a new MqttClient instance using the given identifier, quality of service, auto_reconnect and max_inflight. URL and auth method will
+	 * be obtained from the global ClearBlade singleton.
+	 */
+	public MqttClient(String clientIdentifier, int qualityOfService, boolean autoReconnect, int maxInflight) throws ClearBladeException {
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, autoReconnect, maxInflight);
 	}
 
 	/**
@@ -109,7 +131,7 @@ public class MqttClient implements MqttCallbackExtended {
 	 * @param qualityOfService the default quality of service to use
 	 * @param autoReconnect whenever the client should automatically connect / reconnect.
 	 */
-	public MqttClient(String url, Auth auth, String systemKey, String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
+	public MqttClient(String url, Auth auth, String systemKey, String clientIdentifier, int qualityOfService, boolean autoReconnect, int maxInflight) throws ClearBladeException {
 
 		this.url = url;
 		this.auth = auth;
@@ -122,6 +144,7 @@ public class MqttClient implements MqttCallbackExtended {
 		this.qosByTopic = new HashMap<>();
 		this.onConnectionComplete = null;
 		this.onConnectionLost = null;
+		this.maxInflight = maxInflight;
 
 		if (autoReconnect) {
 			this.connect();
@@ -382,6 +405,7 @@ public class MqttClient implements MqttCallbackExtended {
 		options.setPassword(systemKey.toCharArray());
 		options.setConnectionTimeout(5);
 		options.setAutomaticReconnect(autoReconnect);
+		options.setMaxInflight(maxInflight);
 
 		try {
 			org.eclipse.paho.client.mqttv3.MqttClient result = new org.eclipse.paho.client.mqttv3.MqttClient(url, clientIdentifier, MQTT_CLIENT_PERSISTENCE);
