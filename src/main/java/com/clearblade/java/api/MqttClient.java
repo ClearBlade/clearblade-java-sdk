@@ -108,6 +108,14 @@ public class MqttClient implements MqttCallbackExtended {
 	}
 
 	/**
+	 * Creates a new MqttClient instance using the given identifier, quality of service and autoReconnect. URL and auth method will
+	 * be obtained from the global ClearBlade singleton.
+	 */
+	public MqttClient(String clientIdentifier, int qualityOfService, boolean autoReconnect) throws ClearBladeException {
+		this(ClearBlade.getMessagingUrl(), ClearBlade.getAuth(), Util.getSystemKey(), clientIdentifier, qualityOfService, autoReconnect, MAX_INFLIGHT);
+	}
+
+	/**
 	 * Creates a new MqttClient instance using the given identifier, quality of service, auto_reconnect and max_inflight. URL and auth method will
 	 * be obtained from the global ClearBlade singleton.
 	 */
