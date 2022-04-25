@@ -21,7 +21,7 @@ public class MqttClientTests {
 
     @BeforeEach
     void setupSpyClient() throws ClearBladeException {
-        MqttClient client = new MqttClient("url", mockAuth, "systemKey", "identifier", 0, false);
+        MqttClient client = new MqttClient("url", mockAuth, "systemKey", "identifier", 0, false, 200);
         mockAuth = mock(Auth.class);
         mockClient = mock(org.eclipse.paho.client.mqttv3.MqttClient.class);
         spyClient = spy(client);
