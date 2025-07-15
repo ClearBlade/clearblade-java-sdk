@@ -1,17 +1,17 @@
-# QuickStart
+# Quickstart
 
 The ClearBlade Java SDK uses [Maven](https://maven.apache.org/) to manage the project and its dependencies. Since
 most IDEs support Maven, you can refer to your preferred IDE documentation to see how to import and compile Maven-based
 projects.
 
 Alternatively, if you have Maven installed, you can compile and install the ClearBlade Java SDK to your local machine
-using the following command from the root of the ClearBlade Java SDK repository:
+using the following command from the ClearBlade Java SDK repository root:
 
 ```
 mvn install
 ```
 
-The command above will install the currently checked out version.
+The command above will install the currently checked-out version.
 
 #### Dependencies
 
@@ -23,15 +23,14 @@ Check [pom.xml](pom.xml) for reference.
 - [Device auth example](src/main/java/com/clearblade/examples/DeviceAuthExample.java).
 - [Legacy example](src/main/java/com/clearblade/examples/MqttClientJava.java).
 
-# API References
+# API references
 
 ## Initialization
 
-Initialization is the very first and crucial step in using the ClearBlade Java
-API for your application. You will not be able to access any features of the
-ClearBlade platform without initialization.
+Initialization is the first and crucial step in using the ClearBlade Java
+API for your application. You will not be able to access any ClearBlade Platform features without initialization.
 
-You will need to import the following packages in your java file:
+You must import the following packages in your Java file:
 
 ```java
 import com.clearblade.java.api.ClearBlade;
@@ -43,7 +42,7 @@ import com.clearblade.java.api.InitCallback;
 
 There are two ways to initialize the SDK:
 
-#### Without Options
+#### Without options
 
 ```java
 String SYSTEM_KEY = "your_systemkey";
@@ -62,7 +61,7 @@ InitCallback initCallback = new InitCallback(){
 clearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initCallback);
 ```
 
-#### With Options
+#### With options
 
 Use the `com.clearblade.java.api.InitOptions` class to construct your options object:
 
@@ -103,11 +102,10 @@ ClearBlade.initialize(SYSTEM_KEY, SYSTEM_SECRET, initOptions, initCallback);
 
 ## Authentication methods
 
-Authentication is handled by passing an implementation of the `com.clearblade.java.api.auth.Auth`
-interface to the `com.clearblade.java.api.InitOptions/setAuth` method. By default,
-it uses a `com.clearblade.java.api.auth.AnonAuth` instance.
+Authentication is handled by implementing the `com.clearblade.java.api.auth.Auth`
+interface to the `com.clearblade.java.api.InitOptions/setAuth` method. It uses a `com.clearblade.java.api.auth.AnonAuth` instance by default.
 
-Here's a small snippet that authenticates to the platform using user authentication:
+Here's a small snippet that authenticates to the Platform using user authentication:
 
 ```java
 import com.clearblade.java.api.ClearBlade;
@@ -118,13 +116,15 @@ InitOptions initOptions = new InitOptions()
 ClearBlade.initialize("YOUR SYSTEM KEY", "YOUR SYSTEM SECRET", initOptions, ...);
 ```
 Check the `com.clearblade.java.api.auth` package for more authentication methods.
+
 ## Code
-The ClearBlade Java API allows executing a Code Service on the platform from your Java application.
-**Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Code API.**
-You need to import the following packages to use the Code API:
+The ClearBlade Java API allows executing a code service from your Java application on the Platform.
+**Please ensure that you have initialized and authenticated with the ClearBlade Platform before using the Code API.**
+You must import the following packages to use the Code API:
 ```import com.clearblade.java.api.Code;```
 ```import com.clearblade.java.api.CodeCallback;```
-#### Code Service Without Parameters
+
+#### Code service without parameters
 A code service which does not take any parameters can be executed as follows:
 ```java
 String serviceName = "yourServiceName";
@@ -143,8 +143,8 @@ CodeCallback codeCallback = new CodeCallback() {
 Code codeService = new Code(serviceName);
 codeService.executeWithoutParams(codeCallback);
 ```
-#### Code Service With Parameters
-A Json Object of parameters needs to be passes to the ```Code``` class constructor along with the service name:
+#### Code service with parameters
+A JSON object of parameters needs to be passed to the ```code``` class constructor with the service name:
 ```java
 String serviceName = "yourServiceName";
 String parameters = "{\"param1\":\"value1\"}";
@@ -165,14 +165,15 @@ Code codeService = new Code(serviceName, parameterJsonObject);
 codeService.executeWithParams(codeCallback);
 ```
 ## Data
-With the ClearBlade Java API, a developer can use the ```Query, Item``` and ```Collection``` objects to manipulate data on the ClearBlade platform.
+With the ClearBlade Java API, a developer can use the ```query```, ```item```, and ```collection``` objects to manipulate data on the ClearBlade Platform.
 Import the following packages:
 -```import com.clearblade.java.api.Collection;```
 -```import com.clearblade.java.api.Query;```
 -```import com.clearblade.java.api.Item;```
 -```import com.clearblade.java.api.DataCallback;```
+
 ## Query
-Create a new ```Query``` object:
+Create a new ```query``` object:
 ```java
 String collectionID = "yourCollectionID";
 Query query = new Query(collectionID);
@@ -287,7 +288,7 @@ Query query = new Query(collectionID);
 #### query.remove(final DataCallback callback)
 
 ```java
-	 /* Removes on all items matching the query criteria within a Collection */
+	 /* Removes all items matching the query criteria within a collection */
 	 	query.equalTo("name", "John");
 	 	query.remove( new DataCallback() {
 	 		@Override
@@ -301,11 +302,11 @@ Query query = new Query(collectionID);
 	 	});
 ```
 
-The page size and page number of the results to be returned can be set by using ```query.setPageSize(int pageSize)``` and ```query.setPageNum(int pageNum)```.
+The page size and page number of the results to be returned can be set using ```query.setPageSize(int pageSize)``` and ```query.setPageNum(int pageNum)```.
 
 ## Collections
 
-The ```Collection``` class contains functions to **fetch (GET)**, **update (PUT)**, **create (POST)** and **remove (DELETE)** a collection using the REST API.
+The ```Collection``` class contains functions to **fetch (GET)**, **update (PUT)**, **create (POST)**, and **remove (DELETE)** a collection using the REST API.
 A collection object needs to be created first:
 ```java
 String collectionID = "yourCollectionID";
@@ -316,11 +317,11 @@ Collection collection = new Collection(collectionID);
 
 ```java
 /**
-	 * Gets all Items that match Query criteria from the platform in the Cloud.
-	 * Retrieved Items will be stored locally in the Collection.</p>
-	 * Overrides previously stored Items*</strong>
-	 * Runs in its own asynchronous task*</strong>
-	 * @throws ClearBladeException will be returned in callback.error() if the collection was empty
+	 * Gets all items that match query criteria from the Platform in the Cloud.
+	 * Retrieved items will be stored locally in the collection.</p>
+	 * Overrides previously stored items*</strong>
+	 * Runs in its asynchronous task*</strong>
+	 * @throws ClearBladeException will be returned in the callback.error() if the collection was empty
 	 */
 Query query = new Query();
 query.equalTo("height", 105);
@@ -340,11 +341,11 @@ collection.fetch(query, new DataCallback() {
 
 ```java
 /**
-	 * Gets all Items that are saved in the collection in the Cloud.
-	 * Retrieved Items will be stored locally in the Collection.</p>
-	 * Overrides previously stored Items*</strong>
-	 * Runs in its own asynchronous task*</strong>
-	 * @throws ClearBladeException will be returned in callback.error() if the collection was empty
+	 * Gets all items that are saved in the collection in the Cloud.
+	 * Retrieved items will be stored locally in the collection.</p>
+	 * Overrides previously stored items*</strong>
+	 * Runs in its asynchronous task*</strong>
+	 * @throws ClearBladeException will be returned in the callback.error() if the collection was empty
 	 */
 collection.fetchAll(new DataCallback() {
     @Override
@@ -396,10 +397,10 @@ collection.create(column, new DataCallback() {
 
 ```java
 /**
-	 * Deletes all Items that are saved in the collection in the Cloud synchronously.
-	 * Deleted Items will be stored locally in the Collection.</p>
-	 * Overrides previously stored Items*</strong>
-	 * Runs in its own asynchronous task*</strong>
+	 * Deletes all items that are saved in the collection in the Cloud synchronously.
+	 * Deleted items will be stored locally in the collection.</p>
+	 * Overrides previously stored items*</strong>
+	 * Runs in its asynchronous task*</strong>
 	 * @throws ClearBladeException will be returned in the callback error function
 	 */
 collection.remove(new DataCallback() {
@@ -416,15 +417,16 @@ collection.remove(new DataCallback() {
 
 ## Messaging
 
-The Messaging API is used initialize, connect and communicate with the ClearBlade MQTT Broker for publishing messages, subscribing, unsubscribing to and from topics and disconnect.
+The Messaging API is used to initialize, connect, and communicate with the ClearBlade MQTT broker to publish messages, subscribe, and unsubscribe to and from topics.
 
-**Please make sure that you have initialized and authenticated with the ClearBlade platform prior to using the Messaging API. This is important because the ClearBlade MQTT Broker requires the authentication token to establish a successful connection. This authentication token can only be obtained by initializing and authenticaing with the ClearBlade platform**
+**Please ensure that you have initialized and authenticated with the ClearBlade Platform before using the Messaging API. This is important because the ClearBlade MQTT broker requires the authentication token to establish a successful connection. This authentication token can only be obtained by initializing and authenticating with the ClearBlade Platform**
 
-You will need to import the following packages for using the Messaging API:
+You must import the following packages using the Messaging API:
 ```import com.clearblade.java.api.MqttClient;```
 ```import com.clearblade.java.api.MessageCallback;```
-### Initialize and Connect
-The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT Broker.
+
+### Initialize and connect
+The first step is to create a new ```Message``` object by passing the client ID and messaging QoS (optional). The ```Message``` constructor will then initialize and connect with the MQTT broker.
 ```java
 String clientID = “ClearBladeJavaTest”;
 MqttClient mqttClient = new MqttClient(clientID); // QoS = 0 Default
@@ -452,11 +454,11 @@ int maxInflight = 100;
 MqttClient mqttClient = new MqttClient(clientID, qos, autoReconnect, maxInflight);
 ```
 
-After the connection is successful, you can publish, subscribe, unsubscribe or disconnect using the ```Message``` object.
+After the successful connection, you can publish, subscribe, unsubscribe, or disconnect using the ```Message``` object.
 
 ### Publish
 
-The publish function takes a topic and message of type ```String``` and publishes to the MQTT Broker.
+The publish function takes a topic and message of type ```string``` and publishes them to the MQTT broker.
 ```java
 String topic = "yourTopic";
 String message = "yourMessage";
@@ -465,13 +467,13 @@ mqttClient.publish(topic, message);
 
 ### Subscribe
 
-The subscribe function takes a topic of type ```String``` and a callback to handle the arrived messages.
+The subscribe function takes a topic of type ```string``` and a callback to handle the arrived messages.
 ```java
 String topic = "topicToSubscribe";
 MessageCallback messageCallback = new MessageCallback() {
 	@Override
 	public void done(String topic, String messageString) {
-		//Message arrived on subscribed topic
+		//Message arrived on the subscribed topic
 	}
 };
 mqttClient.subscribe(topic, messageCallback);
@@ -479,17 +481,14 @@ mqttClient.subscribe(topic, messageCallback);
 
 ### Unsubscribe
 
-The unsubscribe function takes a topic of type ```String``.
+The unsubscribe function takes a topic of type ```string``.
 ```java
 String topic = "topicToUnsubscribe";
 mqttClient.unsubscribe(topic);
 ```
+
 ### Disconnect
-The disconnect function is used to disconnect from the MQTT Broker. **Note that this does not disconnect the user from the ClearBlade platform. User logout needs to be called separately.**
+The disconnect function is used to disconnect from the MQTT broker. **This does not disconnect the user from the ClearBlade Platform. User logout needs to be called separately.**
 ```java
 mqttClient.disconnect();
 ```
-
-# JavaDoc
-
-The Javadoc for the Java API can be found [here](https://docs.clearblade.com/v/3/static/javaapi/index.html).
